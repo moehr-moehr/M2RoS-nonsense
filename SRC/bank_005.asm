@@ -145,10 +145,10 @@ loadTitleScreen: ;{ 05:408F
         dec b
     jr nz, .hudLoop
     ; Load HUD
-		;;;;hijack
+		;;;;m2maps: initial load of map tiles at game start
 			handleLoadMapTiles:
 			call doHandleLoadMapTiles_farCall
-		;;;;end hijack
+		;;;;end m2maps block
     ; Load "Save" text
     ld hl, saveTextTilemap
     ld de, vramDest_itemText

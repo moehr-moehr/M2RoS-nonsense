@@ -132,15 +132,15 @@ VBlankHandler: ;{ 00:0154
         call VBlank_updateMap
         jr .endIf_B
     .else_B:
-		;;;;hijack new update status bar
+		;;;;m2maps: skip updating gameplay status bar if game is paused
 			ld a, [gameMode]
-			cp a, $08
+			cp a, gameMode_paused
 			jr nz, .skipUpdateHudPaused
 				ld a, BANK(VBlank_updateStatusBarPaused)
 				ld [rMBC_BANK_REG], a
 				jr .endIf_B
 			.skipUpdateHudPaused:			
-		;;;;end hijack
+		;;;;end m2maps block
         ld a, BANK(VBlank_updateStatusBar)
         ld [rMBC_BANK_REG], a
         call VBlank_updateStatusBar
@@ -580,12 +580,10 @@ gameMode_LoadA: ;{ 00:03B5
     ld a, [saveBuf_metroidCountDisplayed]
     ld [metroidCountDisplayed], a
 
-		;;;;hijack - for item count
+		;;;;m2maps: account for SRAM for item count
 		    ld a, [saveBuf_startItems]
 			ld [mapItemsFound], a
-		    ld a, [saveBuf_totalItems]
-			ld [mapItemsTotal], a
-		;;;;end hijack
+		;;;;end m2maps block
     ; Clear variables
     xor a
     ld [doorScrollDirection], a
@@ -683,13 +681,12 @@ gameMode_LoadB: ;{ 00:0464
     sub $30
     ld [scrollX], a
 
-	;;;;;;;;hijack
-		; Load pauseMap
+	;;;;;;;;m2maps: load initial pauseMap
 		callFar farLoadMapTiles
 		ld a, [currentLevelBank]
 		ld [bankRegMirror], a
 		ld [rMBC_BANK_REG], a
-	;;;;end hijack
+	;;;;end m2maps block
 
     ; Enable LCD
     ld a, $e3
@@ -1357,7 +1354,7 @@ handleCamera: ;{ 00:08FE
     or b
     ld e, a    
     ld d, $00
-		;;;;;;;;hijack - write to DD60 debug table
+		;;;;;;;;m2maps debug only: write to DD60 debug table and make Samus invincible
 ;		ld a, [currentLevelBank]
 ;		ld [$dd72], a
 ;		ld a, [hSamusYScreen]
@@ -1367,7 +1364,7 @@ handleCamera: ;{ 00:08FE
 ;		ld a, $99
 ;		ld [samusCurHealthLow], a
 ;		ld [samusDispHealthLow], a
-		;;;;;;;;end hijack
+		;;;;;;;;end m2maps block
 	
     ; Load scroll data for screen
     ld hl, map_scrollData ;$4200
@@ -6189,10 +6186,10 @@ executeDoorScript: ;{ 00:239C
     .doorToken_warp:
     cp $40 ; WARP {
     jr nz, .doorToken_escapeQueen
-			;;;;;;;;hijack
-				ld a, $01
+			;;;;;;;;m2maps: set new map flag
+				ld a, set_new_map_flag
 				ld [loadNewMapFlag], a
-			;;;;;;;;end hijack
+			;;;;;;;;end m2maps block
         call door_warp
         ; Set exit status to indicate that enemy spawn flags should be refreshed
         ;  (although loadDoorIndex does that already so this might be unnecessary)
@@ -6582,7 +6579,7 @@ executeDoorScript: ;{ 00:239C
             ; Transfer graphics
             call beginGraphicsTransfer
         ;}
-;;;;;;;;big hijack - move this to item collection handler    
+;;;;;;;;m2maps - this block has been moved to item collection handler and edited    
 ;        pop hl
 ;        
 ;        ; Load item text {
@@ -6627,10 +6624,11 @@ executeDoorScript: ;{ 00:239C
 ;            ; Transfer graphics
 ;            call beginGraphicsTransfer
 ;        pop hl ;}
-;;;;;;;;;end big hijack
+;;;;;;;;;end m2maps relocated code
         pop hl
-		;added inc as part of above hijack
+		;;;;m2maps: needs to inc hl due to relocated code
 		inc hl
+		;;;;end m2maps block
         jr .nextToken
 
 .nextToken:
@@ -6650,19 +6648,19 @@ executeDoorScript: ;{ 00:239C
     ld [doorExitStatus], a
     ; Otherwise unused variable
     ld [wramUnknown_D0A8], a
-				;;;;hijack
+				;;;;m2maps: load new m2map tilemap to window VRAM during warp screen transition type
 				ld a, [loadNewMapFlag]
-				cp a, $01
+				cp a, set_new_map_flag
 				jr nz, .next
 					call disableLCD
 					callFar farLoadMapTiles
 					ld a, [currentLevelBank]
 					ld [bankRegMirror], a
 					ld [rMBC_BANK_REG], a
-					ld a, $e3
+					ld a, enable_PPU_flag
 					ldh [rLCDC], a
 				.next:
-				;;;;end hijack
+				;;;;end m2maps block
 ret ;}
 
 ; Door script load graphics routine
@@ -7656,13 +7654,13 @@ tryPausing: ;{ 00:2C79
     ; Set game mode
     ld a, $08
     ldh [gameMode], a
-		;;;;;;;;hijack
+		;;;;;;;;m2maps: when pausing, clear all sprites then run new map sprite setup routine
 			call disableLCD
 			call clearAllOam_longJump
 			callFar pauseAdjustSpriteSetup
-			ld a, $e3
+			ld a, enable_PPU_flag
 			ldh [rLCDC], a
-		;;;;;;;;end hijacked
+		;;;;;;;;end m2maps block
 ret ;}
 
 gameMode_Paused: ;{ 00:2CED
@@ -7688,9 +7686,9 @@ gameMode_Paused: ;{ 00:2CED
         ret z
 
     ; Return to main game mode if start is pressed
-		;;;;hijack, clear the map sprites
+		;;;;m2maps: clear all map sprites when unpausing
 			call clearAllOam_longJump
-		;;;;end hijack
+		;;;;end m2maps block
     ld a, $93
     ld [bg_palette], a
     ld [ob_palette0], a
@@ -9845,16 +9843,16 @@ handleItemPickup: ;{ 00:372F
         ld a, $00
         ld [songInterruptionRequest], a
     .endIf_C:
-	;;;;hijack - increment map items found if first beam or non-refill
+	;;;;m2maps: increment map items found if first beam or non-refill, and load item message
 		call disableLCD
 		callFar calcFoundEquipment
 			;returns d=$00 and e=item number-1 *2
 
-			;paste from big hijack in door routine, down below?:
-				;d and e set above
+			;relocated from old item content handler, but probably poorly reimplemented:
+				;d and e set in calcFoundEquipment
 				ld a, BANK(itemTextPointerTable)
 				ld [bankRegMirror], a
-				ld [$d065], a
+				ld [vramTransfer_srcBank], a
 				ld [rMBC_BANK_REG], a
 				push hl
 				ld hl, itemTextPointerTable
@@ -9880,10 +9878,10 @@ handleItemPickup: ;{ 00:372F
 					ld a, [currentLevelBank]
 					ld [bankRegMirror], a
 					ld [rMBC_BANK_REG], a
-			;end relocation
-		ld a, $e3
+			;end relocation and bad reimplementation
+		ld a, enable_PPU_flag
 		ldh [rLCDC], a
-	;;;;end hijack
+	;;;;end m2maps block
 
     ; Jump to pick-up specific routine
     ld a, b
@@ -10917,6 +10915,8 @@ unusedDeathAnimation_copy: ;{ 00:3F07
 reti ;}
 
 bank0_freespace: ; Freespace - 00:3F60 (filled with $00)
+
+;new code
 doHandleLoadMapTiles_farCall:
     callFar farLoadMapTiles
     switchBank handleLoadMapTiles

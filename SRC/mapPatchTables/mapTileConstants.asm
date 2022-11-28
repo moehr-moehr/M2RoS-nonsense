@@ -1,5 +1,52 @@
+def gameMode_paused = $08
+def sram_total = $27
+def clear_new_map_flag = $00
+def set_new_map_flag = $01
+def enable_PPU_flag = $e3
+
+def mapDotsOAM_hi = $c0
+def mapDotsOAM_lo = $0c
+def mapIconsWram_hi = $dd
+def mapIconsWram_lo = $70
+
+def windowHeight_hud = $88
+def windowHeight_text = $80
+def windowHeight_map = $00
+
 def start_items = $00
 def total_items = $36
+
+def isBeam = $05
+def isRefill = $0e
+def isFirstBeam = $00
+
+;enemyOffset is where in enemy hRam to get the item wRam index value
+;that value -$40 gives you the SRAM floor for the low byte of the SRAM address of the item
+;bankOffset is used to account for currentLevelBank min val of $09
+;loopLimit is anded with bankOffset+1 to enter a loop with a dec/jr z conditional at the start
+;it also accounts for there being only 4 valid low byte offsets - $00, $40, $80, $C0
+def mapTable_bankOffset = $09
+def clearItem_enemyOffset = $1d
+def clearItem_sramOffsetHi = $c9
+def clearItem_sramOffsetLo = $40
+def clearItem_bankOffset = mapTable_bankOffset
+def clearItem_loopLimit = $03
+def set_item_collected = $02
+
+def tile_blank = $ff
+def tile_white = $af
+def tile_missile = $9f
+def tile_colon = $9e
+def tile_slash = $ae
+def tile_0 = $a0
+def tile_S = $d2
+def tile_A = $c0
+def tile_V = $d5
+def tile_E = $c4
+def tile_COL = $de
+
+def mapIcon_samus = $01
+def mapIcon_crossHair = $0f
 
 MAP0 = $AF ;room pattern 0
 MAP1 = $9D ;room pattern 1
@@ -27,6 +74,7 @@ TST7 = $A7
 
 ;how map sprite arrays are done:
 ;auto-validate address:
+def icon_array_terminator = $ff
 AUTOVAL = $c0
 ENDLIST = $ff
 COLLECTED = $02 ;works for doors, metroids, items :D

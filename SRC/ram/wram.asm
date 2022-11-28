@@ -1474,6 +1474,8 @@ bombArray:: ;$DD30..5F: Bomb data. 10h byte slots
 ;    + 2: Y position
 ;    + 3: X position
 ;}
+
+;;;;m2maps: wram additions for m2maps data
 loadNewMapFlag:: ds $01	;IN USE flag at endDoorScript in bank 0 to run load new map tiles
 mapLevelBankIndexOffset:: ds $01	;debugging vars, =(mapLevelBank-9)x2, used as an offset to adjust an index
 mapCollectionIndex:: ds $01	;IN USE $dd60, map index to load, 256 entries per level map, used in bank 10 to determine which map to load
@@ -1482,15 +1484,16 @@ mapToLoad:: ds $01	;debug, value of the map to load as stored in the lookup tabl
 samusMapY:: ds $01 ;IN USE supposedly, Samus Y position for the map
 samusMapX:: ds $01 ;IN USE supposedly, samus X position for the map
 mapItemsFound:: ds $01
-mapItemsTotal:: ds $01
+mapItemsUnused:: ds $01
 mapSamusLocatorYOffset:: ds $01 ;IN USE note these two are in use
 mapSamusLocatorXOffset:: ds $01 ;IN USE these are temporary for samus map location to display on window
 clearItemDotLow:: ds $01 ;IN USE for clearing item dot after contacting item, due to nonpersistent hRam vals
-clearItemDotHigh:: ds $01 ;IN USE same as prevSamusXPixel
+clearItemDotHigh:: ds $01 ;IN USE same as previous entry
 clearItemBank:: ds $01	;IN USE track map bank for item collected on touch
 clearItemIndex:: ds $01	;IN USE tracking the offset of item bank
 mapWram:: ds $70 ;IN USE map sprite buffer data
 wramUnused_DD80: ds $100 - $e0 ;$DD71..FF: Unused
+;;;;end m2maps block
 
 ; List of metatiles from the map to update to VRAM
 mapUpdateBuffer:: ds $100 ; $DE00..FF

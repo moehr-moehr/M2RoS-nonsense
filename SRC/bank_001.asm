@@ -105,18 +105,18 @@ VBlank_updateStatusBar: ;{ 01:493E
     ld [hl+], a
     
     ; Skip over missile icon (drawn previously)
+	;;;;m2maps: draw tiles to accomadate new pause hud
+	;;;;don't inc hl since we are drawing three new tiles
 	;inc hl
 	;inc hl
     ;inc hl
-	;;;;hijack - draw these to accomadate new pause hud
-	;;;;hijack - redraw blank tile to accomodate new pause hud
-		ld a, $af
+		ld a, tile_white
 		ld [hl+], a
-		ld a, $9f
+		ld a, tile_missile
 		ld [hl+], a
-		ld a, $9e
+		ld a, tile_colon
 		ld [hl+], a
-	;;;;end hijack
+	;;;;end m2maps block
     
     ; Draw Samus' missiles (hundreds digit)
     ld a, [samusDispMissilesHigh]
@@ -137,12 +137,12 @@ VBlank_updateStatusBar: ;{ 01:493E
     
     ; Skip over metroid icon
     inc hl
+	;;;;m2maps: redraw blank tile to accomodate new pause hud
 	;inc hl
-	;;;;hijack - redraw blank tile to accomodate new pause hud
-		;comments out inc above
-		ld a, $ff
+		;comments out inc above from OG src
+		ld a, tile_blank
 		ld [hl+], a
-	;;;;end hijack
+	;;;;end m2maps block
     inc hl
     inc hl
 
@@ -980,10 +980,10 @@ createNewSave: ;{ 01:4E1C
     ; Copy initial save file to save buffer
     ld hl, initialSaveFile
     ld de, saveBuffer
+	;;;;m2maps: use new sram width for loop length instead of OG src of $26
 ;    ld b, $26
-	;;;hijack - comment above and make $28
-		ld b, $28
-	;;;;end hijack
+	ld b, sram_total
+	;;;;end m2maps block
     .loadLoop:
         ld a, [hl+]
         ld [de], a
@@ -1019,10 +1019,10 @@ loadSaveFile: ;{ 01:4E33
     
     ; Copy save file to save buffer
     ld de, saveBuffer
+	;;;;m2maps: use new sram width for loop length instead of OG src of $26
 ;    ld b, $26
-	;;;;hijack - comment above and make $28 for new item collection tally
-		ld b, $28
-	;;;;end hijack
+		ld b, sram_total
+	;;;;end m2maps block
     .loadLoop:
         ld a, [hl+]
         ld [de], a
@@ -3009,10 +3009,10 @@ miscIngameTasks: ;{ 01:57F2
     ; Skip this if in the Queen fight
     ld a, [queen_roomFlag]
     cp $11
-;OG    jr z, .endIf_B
-		;;;; hijack comments above jr and makes a jp
-			jp z, .endIf_B
-		;;;;end hijack
+		;;;;m2maps: needs to jp instead of jr to reach branch head
+;    jr z, .endIf_B
+		jp z, .endIf_B
+		;;;;end m2maps block
         ldh a, [rLCDC]
         bit 5, a
         jr nz, .endIf_C
@@ -3021,11 +3021,20 @@ miscIngameTasks: ;{ 01:57F2
             ldh [rLCDC], a
         .endIf_C:
         
-				;;;;;;;;hijack
-						call hijackForPauseMap
-				;        ld a, $88 ; Default window position
-				;        ldh [rWY], a
-				;;;;;;;;end hijack
+			;;;;m2maps: calls new routine instead of simply adjusting window
+;			ld a, $88 ; Default window position
+;			ldh [rWY], a
+					ldh a, [gameMode]
+					cp a, gameMode_paused
+					jr z, .isPausedLoadMap
+					ld a, windowHeight_hud
+					ldh [rWY], a
+					jr .windowSet
+					.isPausedLoadMap:
+					ld a, windowHeight_map
+					ldh [rWY], a
+				.windowSet:
+			;;;;;;;;end m2maps block
         ; Check different cases for raising the window
         ld a, [saveContactFlag] ; Only unset by door transitions and this function
         and a
@@ -3037,16 +3046,16 @@ miscIngameTasks: ;{ 01:57F2
                 ld a, [itemCollected_copy]
                 cp $0b ; Check if not a common item or refill
                 jp nc, .endIf_B
-                    ld a, $80 ; Higher window position
+                    ld a, windowHeight_text ; Higher window position
                     ldh [rWY], a
                     jp .endIf_B
         .else_D:
             ; Touching a save point
-            ld a, $80 ; Higher window position
+            ld a, windowHeight_text ; Higher window position
             ldh [rWY], a
-				;;;;hijack - draw save text to HUD
+				;;;;m2maps: draw save text to HUD
 						;reset half-tile behind metroid
-							ld a, $ff
+							ld a, tile_blank
 							ld [$9c0f], a
 							ld [$9c20], a
 							ld [$9c26], a
@@ -3061,17 +3070,17 @@ miscIngameTasks: ;{ 01:57F2
 							ld [$9c2f], a
 							ld [$9c30], a
 						; Load "SAVE:" text:
-							ld a, $d2
+							ld a, tile_S
 							ld [$9c21], a
-							ld a, $c0
+							ld a, tile_A
 							ld [$9c22], a
-							ld a, $d5
+							ld a, tile_V
 							ld [$9c23], a
-							ld a, $c4
+							ld a, tile_E
 							ld [$9c24], a
-							ld a, $de
+							ld a, tile_COL
 							ld [$9c25], a
-				;;;;end hijack
+				;;;;end m2maps block
             ; Don't allow saving while "Completed" is displayed
             ld a, [saveMessageCooldownTimer]
             and a
@@ -4444,12 +4453,12 @@ saveFileToSRAM: ;{ 01:7ADF
     ; Save displayed metroid count
     ld a, [metroidCountDisplayed]
     ld [hl+], a
-	;;;;hijack - add total items and collected to be tracked
+	;;;;m2maps: display total items and collected items to be tracked
 			ld a, [mapItemsFound]
 			ld [hl+], a
-			ld a, [mapItemsTotal]
+			ld a, total_items
 			ld [hl+], a
-	;;;;end hijack
+	;;;;end m2maps block
     ; Disable SRAM
     ld a, $00
     ld [$0000], a
@@ -4470,15 +4479,3 @@ saveFileToSRAM: ;{ 01:7ADF
 ret ;}
 
 bank1_freespace: ; 1:7B87 - Freespace (filled with $00)
-
-hijackForPauseMap:
-    ldh a, [gameMode]
-    cp $08
-	jr z, isPausedLoadMap
-	ld a, $88
-	ldh [rWY], a
-	ret
-	isPausedLoadMap:
-	ld a, $00
-	ldh [rWY], a
-	ret	

@@ -2879,18 +2879,21 @@ door1EF:
 door1F0:
     LOAD_SPR gfx_metGamma
     END_DOOR
-
+;;;;m2maps: 2 added door sets, copies of earlier doors to make map transitions work
 door1F1:
+;	copied and modified from door1A0
     WARP $A, $84
     IF_MET_LESS $24, $0188
     IF_MET_LESS $34, $01E3
     IF_MET_LESS $42, $01E2
     END_DOOR
 door1F2:
+;	copied and modified from door1B5
     WARP $A, $83
     IF_MET_LESS $34, $01E1
     IF_MET_LESS $42, $01E3
     END_DOOR
+;;;;end m2maps added door script entries
 door1F3:
 door1F4:
 door1F5:

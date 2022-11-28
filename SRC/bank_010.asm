@@ -125,13 +125,13 @@ farLoadMapTiles:
 ;					ld [samusCurMissilesLow], a
 	;set up map index based on currentLevelBank
 	ld a, [currentLevelBank]
-	sub $09
+	sub mapTable_bankOffset
 ;		;debug hud view
 ;		ld [samusCurMissilesHigh], a
 ;		ld [samusDispMissilesHigh], a
 	add a, a
 	ld e, a
-		;debug
+		;debug, and for later
 		ld [mapLevelBankIndexOffset], a
 	ld d, $00
 	ld hl, mapCollectionSubset
@@ -162,7 +162,6 @@ farLoadMapTiles:
 
 	;now load value at HL addr and double it as pointer to submap to read from
 	ld a, l
-	ld a, l
 	add a, a
 	ld e, a
 	ld d, $00
@@ -176,7 +175,7 @@ farLoadMapTiles:
 	ld h, d
 	ld l, e
 	;
-    ld de, vramDest_map2
+    ld de, vramDest_m2maps
     ld b, $00
     :
         ld a, [hl+]
@@ -212,27 +211,27 @@ farLoadMapTiles:
 	;this saves me calculation where to load this data from,
 	;so it can live right after the map's tiles
 	;note - hl and de should already be set up from before
-	ld d, $dd
-	ld e, $70
+	ld d, mapIconsWram_hi
+	ld e, mapIconsWram_lo
 	.loadMapIconData:
 		ld a, [hl+]
         ld [de], a
-		cp a, $ff
+		cp a, icon_array_terminator
 		jr z, .next
 		inc de
 		jr .loadMapIconData
 	.next:
 		inc de
-	ld a, $00
+	ld a, clear_new_map_flag
 	ld [loadNewMapFlag], a
 				;;;;;;;;;;;; experimental - Samus Locator coords update
 					ld a, [mapCollectionTableXY]
 					ld l, a
 					ld a, [mapCollectionTableXY+1]
+					;add 1 full page to access second map table of samus locator icon Y-offsets
 					add a, $01
 					ld h, a
-					;now we have pointer to the proper map collection table to review (indexed by currentLevelBank)
-					;load the value at that submap table index to hl to find the proper submap
+					;load the value at that pointer to samus Y offset
 					ld e, [hl]
 					inc hl
 					ld d, [hl]
@@ -242,16 +241,15 @@ farLoadMapTiles:
 					ld a, [mapCollectionTableXY]
 					ld l, a
 					ld a, [mapCollectionTableXY+1]
+					;add two full pages to access third map table of samus locator icon X-offsets
 					add a, $02
 					ld h, a
-					;now we have pointer to the proper map collection table to review (indexed by currentLevelBank)
-					;load the value at that submap table index to hl to find the proper submap
+					;load the value at that pointer to samus X offset
 					ld e, [hl]
 					inc hl
 					ld d, [hl]
 					ld a, e
 					ld [mapSamusLocatorXOffset], a
-	
 	ret
 
 pauseAdjustSpriteSetup:
@@ -276,7 +274,7 @@ VBlank_updateStatusBarPaused:
 			rl a
 			ld [$c001], a
 			;locator sprite tile art and palette
-			ld a, $01
+			ld a, mapIcon_samus
 			ld [$c002], a
 			ld a, $00
 			ld [$c003], a
@@ -294,8 +292,8 @@ VBlank_updateStatusBarPaused:
 			and $0f
 			add $a0
 			ld [$9c01], a
-		;draw time colon tile
-			ld a, $9e
+		;draw time colon on white bg tile
+			ld a, tile_colon
 			ld [$9c02], a
 		;draw time minute hi tile
 			ld a, [gameTimeMinutes]
@@ -312,23 +310,21 @@ VBlank_updateStatusBarPaused:
 			add $a0
 			ld [$9c04], a
 		;draw white tile between time and equip
-			ld a, $af
+			ld a, tile_white
 			ld [$9c05], a
 			ld [$9c06], a
-		;draw white tile between time and equip behind sprite
-			ld a, $af
 			ld [$9c07], a
 		;draw equip Samus helm sprite
 			ld a, $10
 			ld [$c004], a
 			ld a, $40
 			ld [$c005], a
-			ld a, $01
+			ld a, mapIcon_samus
 			ld [$c006], a
 			ld a, $00
 			ld [$c007], a			
 		;draw colon tile
-			ld a, $9e
+			ld a, tile_colon
 			ld [$9c08], a
 		;draw numbers for count of remaining items to find
 			ld a, [mapItemsFound]
@@ -344,10 +340,10 @@ VBlank_updateStatusBarPaused:
 			add a, $a0
 			ld [$9c0a], a
 		;draw tile for diagonal line separator
-			ld a, $ae
+			ld a, tile_slash
 			ld [$9c0b], a
 		;draw tile for max items to find tens and ones
-			ld a, [mapItemsTotal]
+			ld a, total_items
 			and a, $f0
 			sra a
 			sra a
@@ -355,23 +351,23 @@ VBlank_updateStatusBarPaused:
 			sra a
 			add a, $a0
 			ld [$9c0c], a					
-			ld a, [mapItemsTotal]
+			ld a, total_items
 			and a, $0f
 			add a, $a0
 			ld [$9c0d], a					
 		;draw white tile between equip and 'roids remaining
-			ld a, $af
+			ld a, tile_white
 			ld [$9c0e], a	
 			ld [$9c0f], a
 		;draw blank tile behind Metroid Left sprite
-			ld a, $ff
+			ld a, tile_blank
 			ld [$9c10], a
 		;draw metroid left L sprite
 			ld a, $10
 			ld [$c008], a
 			ld a, $88
 			ld [$c009], a
-			ld a, $0f
+			ld a, mapIcon_crossHair
 			ld [$c00a], a
 			ld a, $00
 			ld [$c00b], a
@@ -392,12 +388,12 @@ VBlank_updateStatusBarPaused:
 					jr .next
 				.else_E:
 					; Draw blank L counter "--"
-					ld a, $a0 ; zero
+					ld a, tile_0 ; zero
 					ld [$9c12], a
 					ld [$9c13], a
 			.next:
 		;mask message area of pause window black
-			ld a, $ff
+			ld a, tile_blank
 			ld [$9c20], a
 			ld [$9c21], a
 			ld [$9c22], a
@@ -426,11 +422,11 @@ VBlank_updateStatusBarPaused:
 					;read byte at bc. If not FF do four inc HL
 						;read hl+ and write de+ four times			
 			;load the read address of window RAM
-			ld h, $dd
-			ld l, $70
+			ld h, mapIconsWram_hi
+			ld l, mapIconsWram_lo
 			;load the write address of sprite OAM to begin at
-			ld d, $c0
-			ld e, $0c
+			ld d, mapDotsOAM_hi
+			ld e, mapDotsOAM_lo
 			.loopSetupMapSprites:
 				;Validate that sprite should be drawn; if not skip, if so draw
 					ld a, [hl+]
@@ -465,7 +461,7 @@ VBlank_updateStatusBarPaused:
 							inc hl
 							inc hl
 							inc hl
-							ld a, $ff
+							ld a, tile_blank
 							ld [de], a
 							inc de
 							ld [de], a
@@ -493,7 +489,7 @@ VBlank_updateStatusBarPaused:
 			.setupMapSpritesExit:
 				
 	;set window
-	ld a, $00
+	ld a, windowHeight_map
 	ldh [rWY], a
 ret
 
@@ -521,52 +517,53 @@ ret
 ;then we load the text for the appropriate item if it's not a refill
 calcFoundEquipment:
 		ld a, b
-		cp $0e
+		cp isRefill
 		jr nc, .isRefill
-		cp a, $05
+		cp isBeam
 		jr nc, .gotItem
 			ld a, [samusBeam]
-			cp $00
+			cp isFirstBeam
 			jr nz, .notFirstBeam
 			jr .doNotClearItem
 		.gotItem:
 			;get sram bank offset from enemy wram
 				ld a, [clearItemDotLow]
-				add $1d
+				add a, clearItem_enemyOffset
 				ld e, a
 				ld a, [clearItemDotHigh]
 				ld d, a
 				ld a, [de]
-				sub a, $40
+				sub a, clearItem_sramOffsetLo
 				ld [clearItemIndex], a
-			;set up bank as high byte of de
+			;set up bank as high byte of de for SRAM address, is $bank - $9 + $c9
 				ld a, [currentLevelBank]
-				sub a, $09
+				sub a, clearItem_bankOffset
 				sra a
 				sra a
-				add a, $c9
+				add a, clearItem_sramOffsetHi
 				ld d, a
 				ld [clearItemBank], a
-			;loop to set up low byte of de with offset for enemy index
+			;loop to set up low byte of de with offset for enemy index for SRAM low address
 				ld a, [currentLevelBank]
-				sub a, $09
+				sub a, clearItem_bankOffset
 				inc a
-				and $03
+				and a, clearItem_loopLimit
 				ld e, a
 				;get a for loop once more
 				ld a, [clearItemIndex]
 				.loopCurrentCheck
 					dec e
 					jr z, .stopChecking
-					add a, $40
+					add a, clearItem_sramOffsetLo
 					jr .loopCurrentCheck
 				.stopChecking:
 			;have the byte of SRAM buffer to update as 'item collected'
 				ld [clearItemIndex], a
 				ld e, a
-				ld a, $02
+				ld a, set_item_collected
 				ld [de], a
 		.doNotClearItem:
+			;a bad implementation of converting hex to decimal for display
 			ld a, [mapItemsFound]
 			and $0f
 			cp $09

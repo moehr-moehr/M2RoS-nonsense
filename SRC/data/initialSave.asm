@@ -33,6 +33,6 @@
 	db $00       ; In-game timer, hours
 	db $39       ; Number of Metroids remaining
 	
-	;map patch additions
+	;;;;m2maps: map patch additional SRAM to track total items collected
 	db start_items		 ;starting 'equipment found' count
-	db total_items		 ;total equipment to find
+	;;;;end m2maps block

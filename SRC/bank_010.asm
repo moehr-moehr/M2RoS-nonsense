@@ -435,15 +435,15 @@ VBlank_updateStatusBarPaused:
 					ld c, a
 					;check for endLoop value of $ff
 						ld a, b
-						cp a, ENDLIST
+						cp a, endList
 						jr z, .setupMapSpritesExit
 					;check for autovalidate value of $c0
-						cp a, AUTOVAL
+						cp a, autoVal
 						jr z, .itemValidated
 					;if validate required, check if item has been collected (=$02)
 					;if not collected, is validated so draw
 						ld a, [bc]
-						cp a, COLLECTED
+						cp a, set_item_collected
 						jr z, .isCollected
 						jr .itemValidated
 						;if item SRAM isn't set to COLLECTED, check working RAM

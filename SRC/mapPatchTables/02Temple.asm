@@ -1,35 +1,35 @@
 ;pause map tiles for area 1 and lair 1
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAP0, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP0, MAP0, MAP0, MAP0, MAP1, MAP1, MAP1, MAP2, MAP0, MAP0, MAP2, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAP2, MAP1, MAP1, MAP1, MAP0, MAP0, MAP2, MAP2, MAPX, MAPX, MAPX, MAP2, MAP0, MAP0, MAP1, MAP1, MAPX, MAPX
-	db MAPX, MAPH, MAP2, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP2, MAP1, MAP1, MAP1, MAP2, MAPX, MAPX, MAPX, MAP2, MAPX, MAPX
-	db MAPX, MAPX, MAP2, MAPH, MAPX, MAPX, MAP2, MAP1, MAP1, MAP2, MAPX, MAPX, MAPX, MAP2, MAP1, MAP1, MAP1, MAP2, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP3, MAP1, MAP1, MAP2, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mt0, mt0, mt0, mt0, mt0, mt0, mt0, mt0, mt0, mt0, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mt0, mt0, mt0, mt0, mt0, mt0, mt0, mt0, mt0, mt0, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mt0, mt0, mt0, mt0, mt1, mt1, mt1, mt2, mt0, mt0, mt2, mtX, mtX, mtX
+	db mtX, mtX, mt2, mt1, mt1, mt1, mt0, mt0, mt2, mt2, mtX, mtX, mtX, mt2, mt0, mt0, mt1, mt1, mtX, mtX
+	db mtX, mtH, mt2, mtX, mtX, mtX, mtX, mtX, mtX, mt2, mt1, mt1, mt1, mt2, mtX, mtX, mtX, mt2, mtX, mtX
+	db mtX, mtX, mt2, mtH, mtX, mtX, mt2, mt1, mt1, mt2, mtX, mtX, mtX, mt2, mt1, mt1, mt1, mt2, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mt3, mt1, mt1, mt2, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
 ;samus map sprite list
 	;save and refill
-	db AUTOVAL, $00, $30, $48, MAPR, $00
-	db AUTOVAL, $00, $30, $68, MAPR, $00
-	db AUTOVAL, $00, $48, $48, MAPZ, $00
+	db autoVal, $00, $30, $48, mtR, $00
+	db autoVal, $00, $30, $68, mtR, $00
+	db autoVal, $00, $48, $48, mtS, $00
 	;items
-	db VALIDATEBANKD, $22, $50, $68, MAPI, $00  ;etank
-	db VALIDATEBANKD, $23, $58, $38, MAPI, $00  ;bomb
-	db VALIDATEBANKC, $E0, $58, $90, MAPI, $00  ;spider
-	db AUTOVAL, $00, $60, $58, MAPW, $00		;ice
+	db validateBankD, $22, $50, $68, mtI, $00  ;etank
+	db validateBankD, $23, $58, $38, mtI, $00  ;bomb
+	db validateBankC, $E0, $58, $90, mtI, $00  ;spider
+	db autoVal, $00, $60, $58, mtW, $00		;ice
 	;missiles
-	db VALIDATEBANKD, $20, $40, $58, MAPM, $00
-	db VALIDATEBANKD, $21, $40, $68, MAPM, $00
-	db VALIDATEBANKD, $3A, $58, $38, MAPM, $00
-	db VALIDATEBANKD, $25, $58, $78, MAPM, $00
-	db VALIDATEBANKD, $26, $58, $80, MAPM, $00
-	db VALIDATEBANKD, $27, $58, $80, MAPM, $00
-	db ENDLIST
+	db validateBankD, $20, $40, $58, mtM, $00
+	db validateBankD, $21, $40, $68, mtM, $00
+	db validateBankD, $3A, $58, $38, mtM, $00
+	db validateBankD, $25, $58, $78, mtM, $00
+	db validateBankD, $26, $58, $80, mtM, $00
+	db validateBankD, $27, $58, $80, mtM, $00
+	db endList

@@ -578,11 +578,5 @@ calcFoundEquipment:
 		.resume:
 			ld [mapItemsFound], a
 		.notFirstBeam:
-			;fix item text for item msg and beams and equipment
-			;mostly cause it don't fit nicely in that bank
-			ld e, b
-			dec e
-			rl e
-			ld d, $00
 		.isRefill:
 	ret

@@ -9854,22 +9854,18 @@ handleItemPickup: ;{ 00:372F
 	;;;;m2maps: increment map items found if first beam or non-refill, and load item message
 ;ISSUE: again with this weird wrongcall working
 ;		call disableLCD
-							ldh a, [rLCDC]
-							and $7f
-							ldh [rLCDC], a
 		callFar calcFoundEquipment
-			;returns d=$00 and e=item number-1 *2
-
 			;relocated from old item content handler, but probably poorly reimplemented:
 				;d and e set in calcFoundEquipment
 				ld a, BANK(itemTextPointerTable)
 				ld [bankRegMirror], a
-				ld [vramTransfer_srcBank], a
 				ld [rMBC_BANK_REG], a
 				push hl
+					call disableLCD
 				ld hl, itemTextPointerTable
+				ld d, $00
 				ld a, [itemCollected]
-				rl a
+				sla a
 				ld e, a
 				add hl, de
 				ld e, [hl]
@@ -9887,12 +9883,9 @@ handleItemPickup: ;{ 00:372F
 					dec c
 					jr nz, .loopWriteItem
 				pop hl
-					ld a, [currentLevelBank]
-					ld [bankRegMirror], a
-					ld [rMBC_BANK_REG], a
 			;end relocation and bad reimplementation
-		ld a, enable_PPU_flag
-		ldh [rLCDC], a
+					ld a, enable_PPU_flag
+					ldh [rLCDC], a
 	;;;;end m2maps block
 
     ; Jump to pick-up specific routine

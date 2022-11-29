@@ -1,3 +1,6 @@
+;;;;special thanks to RT-55J without whom and his SRC this project wouldn't have happened
+;;;;P.jboy for ASM help, and Conner and Liam for making m2 hacking fun through editor dev
+
 def gameMode_paused = $08
 def sram_total = $27
 def clear_new_map_flag = $00
@@ -48,43 +51,52 @@ def tile_COL = $de
 def mapIcon_samus = $01
 def mapIcon_crossHair = $0f
 
-MAP0 = $AF ;room pattern 0
-MAP1 = $9D ;room pattern 1
-MAP2 = $9C ;room pattern 2
-MAP3 = $AD ;room pattern 3
-MAPH = $8F ;horizontal to next map
-MAPV = $8F ;vertical to next map
-MAPI = $91 ;accessory/item/etank
-MAPM = $91 ;missile tank
-MAPW = $90 ;beam upgrades, respawn so leave on map
-MAPR = $93 ;refill point
-MAPZ = $92 ;save zone
-MAPX = $FF ;cannot enter
-SHIP = $36
-LEFT = $00
-RIGHT = $20
-TST0 = $A0
-TST1 = $A1
-TST2 = $A2
-TST3 = $A3
-TST4 = $A4
-TST5 = $A5
-TST6 = $A6
-TST7 = $A7
+;load this map
+def nun = $ff	;unused map, easier to see, reconfigurable, plus lulz
+def m00 = $00
+def m01 = $01
+def m02 = $02
+def m03 = $03
+def m04 = $04
+def m05 = $05
+def m06 = $06
+def m07 = $07
+def m08 = $08
+def m09 = $09
+def m0A = $0A
+def m0B = $0B
+def m0C = $0C
+def m0D = $0D
+
+;draw map with these map tiles
+def mt0 = $AF ;room pattern 0
+def mt1 = $9D ;room pattern 1
+def mt2 = $9C ;room pattern 2
+def mt3 = $AD ;room pattern 3
+def mtH = $8F ;horizontal to next map
+def mtV = $8F ;vertical to next map
+def mtI = $91 ;accessory/item/etank
+def mtM = $91 ;missile tank
+def mtW = $90 ;beam upgrades, respawn so leave on map
+def mtR = $93 ;refill point
+def mtS = $92 ;save zone
+def mtX = $FF ;cannot enter
+def mtG = $36	;gunship
+def flipL = $00	;left flip
+def flipR = $20	;right flip
 
 ;how map sprite arrays are done:
 ;auto-validate address:
 def icon_array_terminator = $ff
-AUTOVAL = $c0
-ENDLIST = $ff
-COLLECTED = $02 ;works for doors, metroids, items :D
-VALIDATEBANK9 = $c9
-VALIDATEBANKA = $c9
-VALIDATEBANKB = $c9
-VALIDATEBANKC = $c9
-VALIDATEBANKD = $ca
-VALIDATEBANKE = $ca
-VALIDATEBANKF = $ca
+def autoVal = $c0
+def endList = $ff
+def validateBank9 = $c9
+def validateBankA = $c9
+def validateBankB = $c9
+def validateBankC = $c9
+def validateBankD = $ca
+def validateBankE = $ca
+def validateBankF = $ca
 ;6 entries per sprite
 ;- SRAM-to-check high (c5-c6),
 ;- SRAM-to-check low (00-ff),

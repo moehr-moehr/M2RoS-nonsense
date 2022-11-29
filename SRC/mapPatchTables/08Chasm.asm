@@ -1,22 +1,22 @@
 ;pause map tiles for 2nd lava section, areas 4 and 5, and the start of 3rd lava section to the Tower
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP2, MAP1, MAP1, MAP1, MAP1, MAP2, MAP2
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP2, MAPX, MAPX, MAPX, MAPX, MAP2, MAP2
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAP2, MAP2, MAP1, MAP1, MAP1, MAP1, MAP2, MAP1, MAP2, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAP2, MAP2, MAPX, MAPX, MAPX, MAPX, MAP2, MAP1, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAP2, MAP1, MAP1, MAP1, MAP1, MAP3, MAP3, MAPX, MAP0, MAP0, MAPH, MAP2, MAP1, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAP2, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP0, MAP0, MAPX, MAPX, MAP1, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAP2, MAP1, MAP1, MAP1, MAP1, MAP1, MAP1, MAP1, MAP0, MAP0, MAPX, MAPX, MAP1, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP0, MAP0, MAPX, MAPX, MAP1, MAPH, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP0, MAP0, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAP0, MAP0, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPH, MAP1, MAP1, MAP1, MAP1, MAP0, MAP0, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-	db MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX, MAPX
-;samus map sprite list
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mt2, mt1, mt1, mt1, mt1, mt2, mt2
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mt2, mtX, mtX, mtX, mtX, mt2, mt2
+	db mtX, mtX, mtX, mtX, mtX, mt2, mt2, mt1, mt1, mt1, mt1, mt2, mt1, mt2, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mt2, mt2, mtX, mtX, mtX, mtX, mt2, mt1, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mt2, mt1, mt1, mt1, mt1, mt3, mt3, mtX, mt0, mt0, mtH, mt2, mt1, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mt2, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mt0, mt0, mtX, mtX, mt1, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mt2, mt1, mt1, mt1, mt1, mt1, mt1, mt1, mt0, mt0, mtX, mtX, mt1, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mt0, mt0, mtX, mtX, mt1, mtH, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mt0, mt0, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mt0, mt0, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtH, mt1, mt1, mt1, mt1, mt0, mt0, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+	db mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX, mtX
+;samus mt sprite list
 	;save and refill
-	db AUTOVAL, $00, $30, $A0, MAPR, $00
-	db AUTOVAL, $00, $40, $30, MAPR, $00
-	db ENDLIST
+	db autoVal, $00, $30, $A0, mtR, $00
+	db autoVal, $00, $40, $30, mtR, $00
+	db endList

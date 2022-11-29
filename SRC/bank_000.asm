@@ -6652,13 +6652,17 @@ executeDoorScript: ;{ 00:239C
 				ld a, [loadNewMapFlag]
 				cp a, set_new_map_flag
 				jr nz, .next
-					call disableLCD
+;ISSUE: weirdly commenting out next line and just using these three lines seems to get rid of the white flash and still loads tiles properly.....
+;					call disableLCD
+							ldh a, [rLCDC]
+							and $7f
+							ldh [rLCDC], a
 					callFar farLoadMapTiles
+					ld a, enable_PPU_flag
+					ldh [rLCDC], a
 					ld a, [currentLevelBank]
 					ld [bankRegMirror], a
 					ld [rMBC_BANK_REG], a
-					ld a, enable_PPU_flag
-					ldh [rLCDC], a
 				.next:
 				;;;;end m2maps block
 ret ;}
@@ -7655,7 +7659,11 @@ tryPausing: ;{ 00:2C79
     ld a, $08
     ldh [gameMode], a
 		;;;;;;;;m2maps: when pausing, clear all sprites then run new map sprite setup routine
-			call disableLCD
+;ISSUE: again with the weird not-good way of updating the screen
+;			call disableLCD
+							ldh a, [rLCDC]
+							and $7f
+							ldh [rLCDC], a
 			call clearAllOam_longJump
 			callFar pauseAdjustSpriteSetup
 			ld a, enable_PPU_flag
@@ -9844,7 +9852,11 @@ handleItemPickup: ;{ 00:372F
         ld [songInterruptionRequest], a
     .endIf_C:
 	;;;;m2maps: increment map items found if first beam or non-refill, and load item message
-		call disableLCD
+;ISSUE: again with this weird wrongcall working
+;		call disableLCD
+							ldh a, [rLCDC]
+							and $7f
+							ldh [rLCDC], a
 		callFar calcFoundEquipment
 			;returns d=$00 and e=item number-1 *2
 

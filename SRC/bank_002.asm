@@ -2476,12 +2476,12 @@ ret
     ; Let game know that an item is being collected now
     ld a, $ff
     ld [itemCollectionFlag], a
-	;;;;;;;;;;;;;;;;;m2maps: store enemy WRAM to do update to clear item dot
-		ld a, [hEnemyWramAddrLow]
-		ld [clearItemDotLow], a
-		ld a, [hEnemyWramAddrHigh]
-		ld [clearItemDotHigh], a
-	;;;;;;;;;;;;;;;;;end m2maps block
+        ; m2maps: store enemy WRAM to do update to clear item dot
+            ld a, [hEnemyWramAddrLow]
+            ld [clearItemDotLow], a
+            ld a, [hEnemyWramAddrHigh]
+            ld [clearItemDotHigh], a
+        ; end m2maps block
 ret
 
 .checkIfDone:

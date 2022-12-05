@@ -132,15 +132,15 @@ VBlankHandler: ;{ 00:0154
         call VBlank_updateMap
         jr .endIf_B
     .else_B:
-		;;;;m2maps: skip updating gameplay status bar if game is paused
-			ld a, [gameMode]
-			cp a, gameMode_paused
-			jr nz, .skipUpdateHudPaused
-				ld a, BANK(VBlank_updateStatusBarPaused)
-				ld [rMBC_BANK_REG], a
-				jr .endIf_B
-			.skipUpdateHudPaused:			
-		;;;;end m2maps block
+            ; m2maps: skip updating gameplay status bar if game is paused
+                ld a, [gameMode]
+                cp a, gameMode_paused
+                jr nz, .skipUpdateHudPaused
+                    ld a, BANK(m2maps_pauseAdjustSpriteSetup)
+                    ld [rMBC_BANK_REG], a
+                    jr .endIf_B
+                .skipUpdateHudPaused:			
+            ; end m2maps block
         ld a, BANK(VBlank_updateStatusBar)
         ld [rMBC_BANK_REG], a
         call VBlank_updateStatusBar
@@ -580,10 +580,10 @@ gameMode_LoadA: ;{ 00:03B5
     ld a, [saveBuf_metroidCountDisplayed]
     ld [metroidCountDisplayed], a
 
-		;;;;m2maps: account for SRAM for item count
-		    ld a, [saveBuf_startItems]
-			ld [mapItemsFound], a
-		;;;;end m2maps block
+        ; m2maps: account for SRAM for item count
+            ld a, [saveBuf_startItems]
+            ld [mapItemsFound], a
+        ; end m2maps block
     ; Clear variables
     xor a
     ld [doorScrollDirection], a
@@ -681,12 +681,13 @@ gameMode_LoadB: ;{ 00:0464
     sub $30
     ld [scrollX], a
 
-	;;;;;;;;m2maps: load initial pauseMap
-		callFar farLoadMapTiles
-		ld a, [currentLevelBank]
-		ld [bankRegMirror], a
-		ld [rMBC_BANK_REG], a
-	;;;;end m2maps block
+        ; m2maps: load initial pauseMap
+            callFar m2maps_farLoadMapTiles
+            switchBankVar [currentLevelBank]
+            ; ld a, [currentLevelBank]
+            ; ld [bankRegMirror], a
+            ; ld [rMBC_BANK_REG], a
+        ; end m2maps block
 
     ; Enable LCD
     ld a, $e3
@@ -1354,17 +1355,17 @@ handleCamera: ;{ 00:08FE
     or b
     ld e, a    
     ld d, $00
-		;;;;;;;;m2maps debug only: write to DD60 debug table and make Samus invincible
-;		ld a, [currentLevelBank]
-;		ld [$dd72], a
-;		ld a, [hSamusYScreen]
-;		ld [$dd73], a
-;		ld a, [hSamusXScreen]
-;		ld [$dd74], a
-;		ld a, $99
-;		ld [samusCurHealthLow], a
-;		ld [samusDispHealthLow], a
-		;;;;;;;;end m2maps block
+        ; m2maps debug only: write to DD60 debug table and make Samus invincible
+        ; ld a, [currentLevelBank]
+        ; ld [$dd72], a
+        ; ld a, [hSamusYScreen]
+        ; ld [$dd73], a
+        ; ld a, [hSamusXScreen]
+        ; ld [$dd74], a
+        ; ld a, $99
+        ; ld [samusCurHealthLow], a
+        ; ld [samusDispHealthLow], a
+		; end m2maps debug block
 	
     ; Load scroll data for screen
     ld hl, map_scrollData ;$4200
@@ -6186,10 +6187,10 @@ executeDoorScript: ;{ 00:239C
     .doorToken_warp:
     cp $40 ; WARP {
     jr nz, .doorToken_escapeQueen
-			;;;;;;;;m2maps: set new map flag
-				ld a, set_new_map_flag
-				ld [loadNewMapFlag], a
-			;;;;;;;;end m2maps block
+            ; m2maps: set new map flag
+                ld a, set_new_map_flag
+                ld [loadNewMapFlag], a
+            ; end m2maps block
         call door_warp
         ; Set exit status to indicate that enemy spawn flags should be refreshed
         ;  (although loadDoorIndex does that already so this might be unnecessary)
@@ -6579,7 +6580,7 @@ executeDoorScript: ;{ 00:239C
             ; Transfer graphics
             call beginGraphicsTransfer
         ;}
-;;;;;;;;m2maps - this block has been moved to item collection handler and edited    
+; m2maps - this block has been moved to item collection handler and edited    
 ;        pop hl
 ;        
 ;        ; Load item text {
@@ -6624,11 +6625,11 @@ executeDoorScript: ;{ 00:239C
 ;            ; Transfer graphics
 ;            call beginGraphicsTransfer
 ;        pop hl ;}
-;;;;;;;;;end m2maps relocated code
+; end m2maps relocated code
         pop hl
-		;;;;m2maps: needs to inc hl due to relocated code
-		inc hl
-		;;;;end m2maps block
+            ; m2maps: needs to inc hl due to relocated code
+                inc hl
+            ; end m2maps block
         jr .nextToken
 
 .nextToken:
@@ -6648,23 +6649,25 @@ executeDoorScript: ;{ 00:239C
     ld [doorExitStatus], a
     ; Otherwise unused variable
     ld [wramUnknown_D0A8], a
-				;;;;m2maps: load new m2map tilemap to window VRAM during warp screen transition type
-				ld a, [loadNewMapFlag]
-				cp a, set_new_map_flag
-				jr nz, .next
-;ISSUE: weirdly commenting out next line and just using these three lines seems to get rid of the white flash and still loads tiles properly.....
-;					call disableLCD
-							ldh a, [rLCDC]
-							and $7f
-							ldh [rLCDC], a
-					callFar farLoadMapTiles
-					ld a, enable_PPU_flag
-					ldh [rLCDC], a
-					ld a, [currentLevelBank]
-					ld [bankRegMirror], a
-					ld [rMBC_BANK_REG], a
-				.next:
-				;;;;end m2maps block
+            ; m2maps: load new m2map tilemap to window VRAM during warp screen transition type
+                ld a, [loadNewMapFlag]
+                cp a, set_new_map_flag
+                jr nz, .next
+                ; ISSUE: weirdly commenting out next line and just using these three
+                ; lines seems to get rid of the white flash and still loads tiles properly.....
+                ; call disableLCD
+                        ldh a, [rLCDC]
+                        and $7f
+                        ldh [rLCDC], a
+                    callFar m2maps_farLoadMapTiles
+                    ld a, enable_PPU_flag
+                    ldh [rLCDC], a
+                    switchBankVar [currentLevelBank]
+                    ; ld a, [currentLevelBank]
+                    ; ld [bankRegMirror], a
+                    ; ld [rMBC_BANK_REG], a
+                .next:
+            ; end m2maps block
 ret ;}
 
 ; Door script load graphics routine
@@ -7658,17 +7661,18 @@ tryPausing: ;{ 00:2C79
     ; Set game mode
     ld a, $08
     ldh [gameMode], a
-		;;;;;;;;m2maps: when pausing, clear all sprites then run new map sprite setup routine
-;ISSUE: again with the weird not-good way of updating the screen
-;			call disableLCD
-							ldh a, [rLCDC]
-							and $7f
-							ldh [rLCDC], a
-			call clearAllOam_longJump
-			callFar pauseAdjustSpriteSetup
-			ld a, enable_PPU_flag
-			ldh [rLCDC], a
-		;;;;;;;;end m2maps block
+        ; m2maps: when pausing, clear all sprites
+        ; then run new map sprite setup routine
+              ; ISSUE: again with the weird not-good way of updating the screen
+                ; call disableLCD
+                ldh a, [rLCDC]
+                and $7f
+                ldh [rLCDC], a
+            call clearAllOam_longJump
+            callFar m2maps_pauseAdjustSpriteSetup
+            ld a, enable_PPU_flag
+            ldh [rLCDC], a
+        ; end m2maps block
 ret ;}
 
 gameMode_Paused: ;{ 00:2CED
@@ -7694,9 +7698,9 @@ gameMode_Paused: ;{ 00:2CED
         ret z
 
     ; Return to main game mode if start is pressed
-		;;;;m2maps: clear all map sprites when unpausing
-			call clearAllOam_longJump
-		;;;;end m2maps block
+        ; m2maps: clear all map sprites when unpausing
+            call clearAllOam_longJump
+        ; end m2maps block
     ld a, $93
     ld [bg_palette], a
     ld [ob_palette0], a
@@ -9851,42 +9855,39 @@ handleItemPickup: ;{ 00:372F
         ld a, $00
         ld [songInterruptionRequest], a
     .endIf_C:
-	;;;;m2maps: increment map items found if first beam or non-refill, and load item message
-;ISSUE: again with this weird wrongcall working
-;		call disableLCD
-		callFar calcFoundEquipment
-			;relocated from old item content handler, but probably poorly reimplemented:
-				;d and e set in calcFoundEquipment
-				ld a, BANK(itemTextPointerTable)
-				ld [bankRegMirror], a
-				ld [rMBC_BANK_REG], a
-				push hl
-					call disableLCD
-				ld hl, itemTextPointerTable
-				ld d, $00
-				ld a, [itemCollected]
-				sla a
-				ld e, a
-				add hl, de
-				ld e, [hl]
-				inc hl
-				ld d, [hl]
-				ld h, d
-				ld l, e
-				ld e, $21
-				ld d, $9c
-				ld c, $10
-				.loopWriteItem
-					ld a, [hl+]
-					ld [de], a
-					inc de
-					dec c
-					jr nz, .loopWriteItem
-				pop hl
-			;end relocation and bad reimplementation
-					ld a, enable_PPU_flag
-					ldh [rLCDC], a
-	;;;;end m2maps block
+        ; m2maps: increment map items found if first beam or non-refill, and load item message
+            callFar m2maps_calcFoundEquipment
+            ;relocated from old item content handler, but probably poorly reimplemented:
+                ld a, BANK(itemTextPointerTable)
+                ld [bankRegMirror], a
+                ld [rMBC_BANK_REG], a
+                push hl
+                    call disableLCD
+                ld hl, itemTextPointerTable
+                ld d, $00
+                ld a, [itemCollected]
+                sla a
+                ld e, a
+                add hl, de
+                ld e, [hl]
+                inc hl
+                ld d, [hl]
+                ld h, d
+                ld l, e
+                ld e, LOW(vramDest_itemText) +1	;21
+                ld d, HIGH(vramDest_itemText)	;9c
+                ld c, $10
+                .loopWriteItem
+                    ld a, [hl+]
+                    ld [de], a
+                    inc de
+                    dec c
+                    jr nz, .loopWriteItem
+                pop hl
+            ;end relocation and bad reimplementation
+            ld a, enable_PPU_flag
+            ldh [rLCDC], a
+        ; end m2maps block
 
     ; Jump to pick-up specific routine
     ld a, b
@@ -10922,7 +10923,7 @@ reti ;}
 bank0_freespace: ; Freespace - 00:3F60 (filled with $00)
 
 ;new code
-doHandleLoadMapTiles_farCall:
-    callFar farLoadMapTiles
-    switchBank handleLoadMapTiles
-	ret
+m2maps_doHandleLoadMapTiles_farCall:
+    callFar m2maps_farLoadMapTiles
+    switchBank m2maps_handleLoadMapTiles
+    ret

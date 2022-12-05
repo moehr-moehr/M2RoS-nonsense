@@ -135,6 +135,7 @@ reti ;}
 ; called by gameMode_boot
 loadTitleScreen: ;{ 05:408F
     call title_loadGraphics
+    ; Load HUD
     ld hl, hudBaseTilemap
     ld de, vramDest_statusBar
     ld b, $14
@@ -144,11 +145,10 @@ loadTitleScreen: ;{ 05:408F
         inc de
         dec b
     jr nz, .hudLoop
-    ; Load HUD
-		;;;;m2maps: initial load of map tiles at game start
-			handleLoadMapTiles:
-			call doHandleLoadMapTiles_farCall
-		;;;;end m2maps block
+        ; m2maps: initial load of map tiles at game start
+            m2maps_handleLoadMapTiles:
+            call m2maps_doHandleLoadMapTiles_farCall
+        ; end m2maps block
     ; Load "Save" text
     ld hl, saveTextTilemap
     ld de, vramDest_itemText

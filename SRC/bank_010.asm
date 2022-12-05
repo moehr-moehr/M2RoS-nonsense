@@ -65,7 +65,7 @@ pauseMapTable:
 	dw hive
 	dw escape
 
-farLoadMapTiles:
+m2maps_farLoadMapTiles:
 		; Get screen index from coordinates
 		ldh a, [hSamusYScreen]
 		rl a
@@ -252,8 +252,7 @@ farLoadMapTiles:
 					ld [mapSamusLocatorXOffset], a
 	ret
 
-pauseAdjustSpriteSetup:
-VBlank_updateStatusBarPaused:
+m2maps_pauseAdjustSpriteSetup:
 		;draw samus locator sprite
 			;top n bottom
 			ld a, [hCameraYScreen]
@@ -515,7 +514,7 @@ ret
 
 ;below - here, we handle the items-found counter,
 ;then we load the text for the appropriate item if it's not a refill
-calcFoundEquipment:
+m2maps_calcFoundEquipment:
 		ld a, b
 		cp isRefill
 		jr nc, .isRefill

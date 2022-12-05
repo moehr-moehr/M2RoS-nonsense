@@ -1062,15 +1062,17 @@ queen_neckPatternPointers: ;{ 03:6C8E - Indexed by queen_neckPattern
 
 ; Initialize Queen AI
 queen_initialize: ;{ 03:6D4A
-		;;;;;;;;;;;;m2maps: clear pauseMap window tiles at start of fight so queen head displays properly
-			ld a, tile_blank
-			ld [$9c88], a
-			ld [$9c89], a
-			ld [$9c8a], a
-			ld [$9c8b], a
-			ld [$9c8c], a
-			ld [$9c8d], a
-		;;;;;;;;;;;; end m2maps block
+        ;m2maps: clear pauseMap window tiles at start of fight,
+        ;so queen head displays properly
+            ld a, tile_blank
+            ld [$9c88], a
+            ld [$9c89], a
+            ld [$9c8a], a
+            ld [$9c8b], a
+            ld [$9c8c], a
+            ld [$9c8d], a
+        ; end m2maps block
+	;clear the entire page
     ld hl, oamScratchpad
     xor a
     ld b, a

@@ -213,9 +213,9 @@ m2maps_farLoadMapTiles:
 	.loadMapIconData:
 		ld a, [hl+]
         ld [de], a
-		cp a, icon_array_terminator
-		jr z, .next
 		inc de
+		cp a, endList
+		jr z, .next
 		jr .loadMapIconData
 	.next:
 		inc de

@@ -87,7 +87,6 @@ def flipR = $20	;right flip
 
 ;how map sprite arrays are done:
 ;auto-validate address:
-def icon_array_terminator = $ff
 def autoVal = $c0
 def endList = $ff
 def validateBank9 = $c9

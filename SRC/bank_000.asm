@@ -136,8 +136,6 @@ VBlankHandler: ;{ 00:0154
                 ld a, [gameMode]
                 cp a, gameMode_paused
                 jr nz, .skipUpdateHudPaused
-                    ld a, BANK(m2maps_pauseAdjustSpriteSetup)
-                    ld [rMBC_BANK_REG], a
                     jr .endIf_B
                 .skipUpdateHudPaused:			
             ; end m2maps block
@@ -3781,6 +3779,10 @@ poseFunc_crouch: ;{ 00:15F4 - $04: Crouching
         jr z, .endIf_K
             ld a, [samus_jumpArcCounter]
             add $10
+			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;nextCheck
+			nop
+			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;endcheck
+
             ld [samus_jumpArcCounter], a
         .endIf_K:
     
@@ -3840,6 +3842,7 @@ poseFunc_crouch: ;{ 00:15F4 - $04: Crouching
     .endIf_O:
 ret
 ;}
+
 
 poseFunc_morphBall: ;{ 00:1701 - $05: Morph ball
     ; Start falling if nothing below

@@ -145,14 +145,9 @@ loadTitleScreen: ;{ 05:408F
         inc de
         dec b
     jr nz, .hudLoop
-        ; m2maps: initial load of map tiles at game start
-			call m2maps_doHandleLoadMapTiles_hijack
-        ;    m2maps_handleLoadMapTiles:
-        ;    call m2maps_doHandleLoadMapTiles_farCall
-        ; end m2maps block
-    ; Load "Save" text
 ;this next line commented and moved with above block to preserve byte locations for LAMP
-;    ld hl, saveTextTilemap
+    ; Load "Save" text
+    ld hl, saveTextTilemap
     ld de, vramDest_itemText
     ld b, $14
     .saveTextLoop:
@@ -1598,14 +1593,3 @@ gfx_theEnd: incbin "gfx/titleCredits/theEnd.chr"
 bank5_freespace: ; 05:7F34 -- filled with $00 (nop)
 
 ;EoF
-
-; m2maps: actual hijack to preserve byte addresses
-; does initial load of map tiles at game start
-	m2maps_doHandleLoadMapTiles_hijack:
-	m2maps_handleLoadMapTiles:
-	call m2maps_doHandleLoadMapTiles_farCall
-		;relocated from hijack to preserve vanilla ROM addresses:
-		ld hl, saveTextTilemap
-	;revert OG code and return from hijack
-	ret
-; end m2maps block

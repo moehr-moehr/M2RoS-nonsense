@@ -3779,10 +3779,6 @@ poseFunc_crouch: ;{ 00:15F4 - $04: Crouching
         jr z, .endIf_K
             ld a, [samus_jumpArcCounter]
             add $10
-			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;nextCheck
-			nop
-			;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;endcheck
-
             ld [samus_jumpArcCounter], a
         .endIf_K:
     
@@ -10924,9 +10920,3 @@ unusedDeathAnimation_copy: ;{ 00:3F07
 reti ;}
 
 bank0_freespace: ; Freespace - 00:3F60 (filled with $00)
-
-;new code
-m2maps_doHandleLoadMapTiles_farCall:
-    callFar m2maps_farLoadMapTiles
-    switchBank m2maps_handleLoadMapTiles
-    ret

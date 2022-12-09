@@ -1475,7 +1475,7 @@ bombArray:: ;$DD30..5F: Bomb data. 10h byte slots
 ;    + 3: X position
 ;}
 
-;;;;m2maps: wram additions for m2maps data
+;;;;m2maps: wram additions for m2maps data at $dd60
 loadNewMapFlag:: ds $01	;IN USE flag at endDoorScript in bank 0 to run load new map tiles
 mapLevelBankIndexOffset:: ds $01	;debugging vars, =(mapLevelBank-9)x2, used as an offset to adjust an index
 mapCollectionIndex:: ds $01	;IN USE $dd60, map index to load, 256 entries per level map, used in bank 10 to determine which map to load

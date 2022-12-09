@@ -207,9 +207,6 @@ m2maps_farLoadMapTiles:
 		:
 	ld a, b
     jr nz, :--
-	;trickery - writes icon list to Window Ram that cannot be displayed on screen
-	;this saves me calculation where to load this data from,
-	;so it can live right after the map's tiles
 	;note - hl and de should already be set up from before
 	ld d, mapIconsWram_hi
 	ld e, mapIconsWram_lo

@@ -149,7 +149,6 @@ loadTitleScreen: ;{ 05:408F
         inc de
         dec b
     jr nz, .hudLoop
-;this next line commented and moved with above block to preserve byte locations for LAMP
     ; Load "Save" text
     ld hl, saveTextTilemap
     ld de, vramDest_itemText
@@ -1617,13 +1616,6 @@ titleTilemap: include "data/title_tilemap.asm"
 
 ; 05:5F34 - Includes credits font, item font, and sprite numbers
 ;  The title screen assumes these for files are contiguous
-gfx_titleScreen:     incbin "gfx/titleCredits/titleScreen.chr",   0,$A00
-gfx_creditsFont:     incbin "gfx/titleCredits/creditsFont.chr",   0,$300
-gfx_itemFont:        incbin "gfx/titleCredits/itemFont.chr",      0,$200
-gfx_creditsNumbers:  incbin "gfx/titleCredits/creditsNumbers.chr",0,$100
-
-; 05:6F34
-gfx_creditsSprTiles: incbin "gfx/titleCredits/creditsSprTiles.chr"
 if !def(COLOURHACK)
     gfx_titleScreen:     incbin "gfx/titleCredits/titleScreen.chr",   0,$A00
     gfx_creditsFont:     incbin "gfx/titleCredits/creditsFont.chr",   0,$300

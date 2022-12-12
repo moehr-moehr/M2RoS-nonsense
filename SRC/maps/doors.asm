@@ -30,7 +30,6 @@
     dw door1C0, door1C1, door1C2, door1C3, door1C4, door1C5, door1C6, door1C7, door1C8, door1C9, door1CA, door1CB, door1CC, door1CD, door1CE, door1CF
     dw door1D0, door1D1, door1D2, door1D3, door1D4, door1D5, door1D6, door1D7, door1D8, door1D9, door1DA, door1DB, door1DC, door1DD, door1DE, door1DF
     dw door1E0, door1E1, door1E2, door1E3, door1E4, door1E5, door1E6, door1E7, door1E8, door1E9, door1EA, door1EB, door1EC, door1ED, door1EE, door1EF
-    dw door1F0, door1F1, door1F2, door1F3, door1F4, door1F5, door1F6, door1F7, door1F8, door1F9, door1FA, door1FB, bank5_freespace, door1FD, door1FE, door1FF
     dw door1F0, door1F1, door1F2, door1F3, door1F4, door1F5, door1F6, door1F7, door1F8, door1F9, door1FA, door1FB, door1FC, door1FD, door1FE, door1FF
 
 door000:
@@ -2894,9 +2893,12 @@ door1EF:
 door1F0:
     LOAD_SPR gfx_metGamma
     END_DOOR
+
+if !def(COLOURHACK)
 door1F1:
 door1F2:
 door1F3:
+endc
 door1F4:
 door1F5:
 door1F6:

@@ -1057,6 +1057,7 @@ queen_neckPatternPointers: ;{ 03:6C8E - Indexed by queen_neckPattern
 
 ; Initialize Queen AI
 queen_initialize: ;{ 03:6D4A
+	;clear the entire page
     ; Clear the entire page
     ld hl, oamScratchpad
     xor a

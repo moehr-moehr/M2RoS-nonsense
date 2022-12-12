@@ -31,4 +31,3 @@
 	db $04       ; Song for room
 	db $00       ; In-game timer, minutes
 	db $00       ; In-game timer, hours
-	db $39       ; Number of Metroids remaining

@@ -1407,7 +1407,6 @@ doorScriptBuffer: ds doorScriptBufferSize ; $D700..$D73F: Screen transition comm
 section "WRAM SaveBuffer", wramx[$d800]
 ;$D800..25: Save data. Data loaded from $1:4E64..89 by game mode Bh, loaded from $A008..2D + save slot * 40h by game mode Ch
 ;{
-saveBuffer: ; $26 bytes
 saveBuf_samusYPixel:  ds 1 ; $D800: Samus' Y position
 saveBuf_samusYScreen: ds 1 ; $D801: Samus' Y position
 saveBuf_samusXPixel:  ds 1 ; $D802: Samus' X position
@@ -1532,7 +1531,6 @@ bombArray:: ;$DD30..5F: Bomb data. 10h byte slots
 ;    + 2: Y position
 ;    + 3: X position
 ;}
-wramUnused_DD60: ds $100 - $60 ;$DD60..FF: Unused
 
 ; List of metatiles from the map to update to VRAM
 mapUpdateBuffer:: ds $100 ; $DE00..FF

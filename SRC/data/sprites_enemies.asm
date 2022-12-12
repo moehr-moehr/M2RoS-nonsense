@@ -1660,6 +1660,9 @@ enSprite_item:
     db METASPRITE_END
 enSprite_energyTank:
     db  -8, -8, $AB, $00
+    db  -8,  0, $AC, $00
+    db   0, -8, $AD, $00
+    db   0,  0, $AE, $00
     db METASPRITE_END
 enSprite_missileTank:
     db  -8, -8, $F0, $00

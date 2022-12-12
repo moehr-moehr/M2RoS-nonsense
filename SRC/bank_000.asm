@@ -2,16 +2,10 @@ SECTION "ROM Bank $000", ROM0[$0]
 
 ; Note: RSTs 10, 18, 20, 30, and 38 are unused
 RST_00:: jp bootRoutine
-    db $00,$00,$00,$00,$00
 
 SECTION "RST_08", ROM0[$8]
 RST_08:: jp bootRoutine
-    db $00,$00,$00,$00,$00
-    db $00,$00,$00,$00,$00,$00,$00,$00
-    db $00,$00,$00,$00,$00,$00,$00,$00
-    db $00,$00,$00,$00,$00,$00,$00,$00
 
-RST_28:: ; Jump table routine (index = a)
 if def(COLOURHACK)
     SECTION "RST_10", ROM0[$10]
     RST_10:
@@ -41,23 +35,17 @@ RST_28: ; Jump table routine (index = a)
     jp hl
 ;}
 
-    db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-
 SECTION "VBlankInterrupt", ROM0[$40]
 VBlankInterrupt:: jp VBlankHandler
-    db $00,$00,$00,$00,$00
 
 SECTION "LCDCInterrupt", ROM0[$48]
 LCDCInterrupt:: jp LCDCInterruptHandler_farCall
-    db $00,$00,$00,$00,$00
 
 SECTION "TimerOverflowInterrupt", ROM0[$50]
 TimerOverflowInterrupt:: jp TimerOverflowInterruptStub
-    db $00,$00,$00,$00,$00
 
 SECTION "SerialTransferCompleteInterrupt", ROM0[$58]
 SerialTransferCompleteInterrupt:: jp SerialTransferInterruptStub
-    db $00,$00,$00,$00,$00
 
 SECTION "JoypadTransitionInterrupt", ROM0[$60]
 JoypadTransitionInterrupt:: nop
@@ -93,7 +81,6 @@ HeaderTitle:: db "METROID2", $00, $00, $00, $00, $00, $00, $00, $00
 HeaderNewLicenseeCode:: db $00, $00
 HeaderSGBFlag::         db $00
 HeaderCartridgeType::   db $03
-HeaderROMSize::         db $04 ;originally 03
 HeaderROMSize:
 if !def(COLOURHACK)
     db $03
@@ -104,8 +91,6 @@ HeaderRAMSize::         db $02
 HeaderDestinationCode:: db $01
 HeaderOldLicenseeCode:: db $01
 HeaderMaskROMVersion::  db $00
-HeaderComplementCheck:: db $97
-HeaderGlobalChecksum::  db $58, $1f
 if !def(COLOURHACK)
     HeaderComplementCheck:: db $97
     HeaderGlobalChecksum::  dw $0000
@@ -446,7 +431,6 @@ gameMode_None: ; 00:031B
 waitForNextFrame: ;{ 00:031C
 if !def(COLOURHACK)
     db $76 ; HALT
-
     .vBlankNotDone:
         ldh a, [hVBlankDoneFlag]
         and a
@@ -1456,6 +1440,7 @@ handleCamera: ;{ 00:08FE
     or b
     ld e, a    
     ld d, $00
+    
     ; Load scroll data for screen
     ld hl, map_scrollData ;$4200
     add hl, de
@@ -6683,6 +6668,50 @@ endc
             call beginGraphicsTransfer
         ;}
         pop hl
+        
+        ; Load item text {
+        ; Set source bank
+        ld a, BANK(itemTextPointerTable)
+        ld [bankRegMirror], a
+        ld [vramTransfer_srcBank], a
+        ld [rMBC_BANK_REG], a
+        ; Read lower nybble of token
+        ld a, [hl+]
+        push hl
+            and $0f
+            ; Index into text pointer table
+            ld e, a
+            ld d, $00
+            sla e
+            rl d
+            ld hl, itemTextPointerTable
+            add hl, de
+            ; Load pointer to HL
+            ld a, [hl+]
+            ld e, a
+            ld a, [hl]
+            ld h, a
+            ld a, e
+            ld l, a
+            ; Set source address of text
+            ld a, l
+            ldh [hVramTransfer.srcAddrLow], a
+            ld a, h
+            ldh [hVramTransfer.srcAddrHigh], a
+            ; Set destination address of text
+            ld a, LOW(vramDest_itemText)
+            ldh [hVramTransfer.destAddrLow], a
+            ld a, HIGH(vramDest_itemText)
+            ldh [hVramTransfer.destAddrHigh], a
+            ; Set length of string (16 letters)
+            ld a, $10
+            ldh [hVramTransfer.sizeLow], a
+            ld a, $00
+            ldh [hVramTransfer.sizeHigh], a
+            ; Transfer graphics
+            call beginGraphicsTransfer
+        pop hl ;}
+    jr .nextToken ;}
 
 .nextToken:
     ; Wait a frame before reading another token
@@ -10784,11 +10813,8 @@ handleEnemyLoading_farCall: ; 00:3DE2
     callFar handleEnemyLoading ;$4000
     switchBank processEnemies
 ret
-		
 
 loadEnemy_getFirstEmptySlot_longJump: ; 00:3DF6
-	callFar loadEnemy_getFirstEmptySlot
-	switchBankVar $02 ; Enemy AI bank
     callFar loadEnemy_getFirstEmptySlot
     switchBankVar $02 ; Enemy AI bank
 ret
@@ -10966,7 +10992,7 @@ unusedDeathAnimation_copy: ;{ 00:3F07
     pop af
 reti ;}
 
-bank0_freespace: ; Freespace - 00:3F60 (filled with $00)if def(COLOURHACK)
+if def(COLOURHACK)
     colour_hijack_init:
     ;{
         rst $10

@@ -31,3 +31,8 @@
 	db $04       ; Song for room
 	db $00       ; In-game timer, minutes
 	db $00       ; In-game timer, hours
+	db $39       ; Number of Metroids remaining
+	
+	;;;;m2maps: map patch additional SRAM to track total items collected
+	db start_items		 ;starting 'equipment found' count
+	;;;;end m2maps block

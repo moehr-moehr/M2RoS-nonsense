@@ -1,8 +1,3 @@
-; Disassembly of "Metroid2.gb"
-; This file was created with:
-; mgbdis v1.4 - Game Boy ROM disassembler by Matt Currie and contributors.
-; https://github.com/mattcurrie/mgbdis
-
 SECTION "ROM Bank $006", ROMX[$4000], BANK[$6]
 
 ; Patched in at runtime
@@ -29,9 +24,41 @@ gfx_springBallBottom:: incbin "gfx/samus/springBallBottom.chr"
 
 ; 06:4320 - Power suit and common sprite graphics
 gfx_samusPowerSuit:: incbin "gfx/samus/samusPowerSuit.chr"
+if !def(COLOURHACK)
+    ; 06:4320 - Power suit and common sprite graphics
+    gfx_samusPowerSuit:: incbin "gfx/samus/samusPowerSuit.chr"
+
+    ; 06:4E20
+    gfx_samusVariaSuit:: incbin "gfx/samus/samusVariaSuit.chr"
+
+    ; 06:5920 - Enemy graphics pages -- 64 tiles each
+    gfx_enemiesA::   incbin "gfx/enemies/enemiesA.chr",0,$400
+    gfx_enemiesB::   incbin "gfx/enemies/enemiesB.chr",0,$400
+    gfx_enemiesC::   incbin "gfx/enemies/enemiesC.chr",0,$400
+    gfx_enemiesD::   incbin "gfx/enemies/enemiesD.chr",0,$400
+    gfx_enemiesE::   incbin "gfx/enemies/enemiesE.chr",0,$400
+    gfx_enemiesF::   incbin "gfx/enemies/enemiesF.chr",0,$400
+    gfx_arachnus::   incbin "gfx/enemies/arachnus.chr",0,$400
+    gfx_surfaceSPR:: incbin "gfx/enemies/surfaceSPR.chr",0,$400
+else
+    ; 06:4320 - Power suit and common sprite graphics
+    gfx_samusPowerSuit:: incbin "gfx/samus/colour/samusPowerSuit.chr"
+
+    ; 06:4E20
+    gfx_samusVariaSuit:: incbin "gfx/samus/colour/samusVariaSuit.chr"
 
 ; 06:4E20
 gfx_samusVariaSuit:: incbin "gfx/samus/samusVariaSuit.chr"
+    ; 06:5920 - Enemy graphics pages -- 64 tiles each
+    gfx_enemiesA::   incbin "gfx/enemies/colour/enemiesA.chr",0,$400
+    gfx_enemiesB::   incbin "gfx/enemies/colour/enemiesB.chr",0,$400
+    gfx_enemiesC::   incbin "gfx/enemies/enemiesC.chr",0,$400
+    gfx_enemiesD::   incbin "gfx/enemies/colour/enemiesD.chr",0,$400
+    gfx_enemiesE::   incbin "gfx/enemies/colour/enemiesE.chr",0,$400
+    gfx_enemiesF::   incbin "gfx/enemies/enemiesF.chr",0,$400
+    gfx_arachnus::   incbin "gfx/enemies/colour/arachnus.chr",0,$400
+    gfx_surfaceSPR:: incbin "gfx/enemies/colour/surfaceSPR.chr",0,$400
+endc
 
 ; 06:5920 - Enemy graphics pages -- 64 tiles each
 gfx_enemiesA::   incbin "gfx/enemies/enemiesA.chr",0,$400

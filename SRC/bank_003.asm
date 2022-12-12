@@ -1,8 +1,3 @@
-; Disassembly of "Metroid2.gb"
-; This file was created with:
-; mgbdis v1.4 - Game Boy ROM disassembler by Matt Currie and contributors.
-; https://github.com/mattcurrie/mgbdis
-
 SECTION "ROM Bank $003", ROMX[$4000], BANK[$3]
 
 handleEnemyLoading: ;{ 03:4000
@@ -1062,17 +1057,8 @@ queen_neckPatternPointers: ;{ 03:6C8E - Indexed by queen_neckPattern
 
 ; Initialize Queen AI
 queen_initialize: ;{ 03:6D4A
-        ;m2maps: clear pauseMap window tiles at start of fight,
-        ;so queen head displays properly
-            ld a, tile_blank
-            ld [$9c88], a
-            ld [$9c89], a
-            ld [$9c8a], a
-            ld [$9c8b], a
-            ld [$9c8c], a
-            ld [$9c8d], a
-        ; end m2maps block
 	;clear the entire page
+    ; Clear the entire page
     ld hl, oamScratchpad
     xor a
     ld b, a
@@ -3807,8 +3793,12 @@ jp queen_moveNeck.saveNeckPointer ;}
 
 ; Seals the bottom exit upon death
 queen_closeFloor: ;{ 03:7AA8
+if !def(COLOURHACK)
     ; Get address to write. (X,Y) = (14,24)
     ld hl, $9800 + $20*24 + 14 ; $9B0E
+else
+    jp colour_7DEB
+endc
     
     ; Wait for HBlank
     .waitLoop_A:
@@ -4167,8 +4157,14 @@ LCDCInterruptHandler: ;{ 03:7C7F
         cp $ff
             jr z, .exitLastInterrupt
         and $7f
+if !def(COLOURHACK)
         cp $01
             jr z, .case_1 ; Set scroll X and palette to queen's
+else
+        jp colour_7E06
+        db $24 ; Partial instruction
+        .end_hijack
+endc
         cp $02
             jr z, .case_2 ; Set scroll X and palette to room's
         cp $03
@@ -4237,7 +4233,11 @@ ret ;}
 
 
 VBlank_drawQueen: ;{ 03:7CF0
+if !def(COLOURHACK)
     call queen_drawFeet ; Also draws head if no foot animation is ready
+else
+    call colour_7DAD
+endc
     call queen_disintegrate ; Disintegration effect?
     ; Set scroll position
     ld a, [scrollX]
@@ -4383,5 +4383,96 @@ VBlank_drawQueen: ;{ 03:7CF0
     ld hl, rLCDC
     set 5, [hl]
 ret ;}
+
+if def(COLOURHACK)
+    colour_7DAD:
+    ;{
+        call queen_drawFeet
+        ld a, [colour_D453]
+        or a
+            ret z
+        cp $12
+        jr z, .endIf
+            ret
+            .endIf
+        
+        ld de, colour_D420
+        ld hl, colour_D44F
+        ldi a, [hl]
+        ld h, [hl]
+        ld l, a
+        ld c, $03
+        ld a, $FF
+        ldh [rVBK], a
+        .loop
+            ld a, [de]
+            inc e
+            ldi [hl], a
+            ld a, [de]
+            inc e
+            ldi [hl], a
+            ld a, [de]
+            inc e
+            ldi [hl], a
+            ld a, [de]
+            inc e
+            ldi [hl], a
+            ld a, [de]
+            inc e
+            ldi [hl], a
+            ld a, [de]
+            inc e
+            ldi [hl], a
+            push bc
+            ld bc, $001A
+            add hl, bc
+            pop bc
+            dec c
+        jr nz, .loop
+        
+        xor a
+        ldh [rVBK], a
+        ld [colour_D453], a
+        ret
+    ;}
+
+    colour_7DEB:
+    ;{
+        .loop
+            ldh a, [rSTAT]
+            and STATF_LCD
+            dec a
+                jr nz, .loop
+                
+            ldh a, [rLY]
+            cp $98
+            jr nc, .loop
+            
+        ; Get address to write. (X,Y) = (14,24)
+        ld de, $9800 + $20*24 + 14 ; $9B0E
+        ld hl, colour_7E04
+        ld bc, $0002
+        jp colour_3FC0
+    ;}
+    
+    colour_7E04:
+        db $5D, $5E
+    
+    colour_7E06:
+    ;{
+        push af
+        
+        .loop
+            ldh a, [rSTAT]
+            and STATF_LCD
+            jr nz, .loop
+            
+        pop af
+        cp $01
+            jp z, LCDCInterruptHandler.case_1
+            
+        jp LCDCInterruptHandler.end_hijack
+    ;}
+endc
 
 bank3_freespace: ; 3:7DAD -- Freespace filled with $00 (nop)

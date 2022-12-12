@@ -1659,7 +1659,11 @@ enSprite_item:
     db   0,  0, $B7, $00
     db METASPRITE_END
 enSprite_energyTank:
+	;m2maps: edited etank spritemap to gain 2 tiles for m2maps pauseMap tiles
     db  -8, -8, $AB, $00
+    db  -8,  0, $AB, $20
+    db   0, -8, $AC, $00
+    db   0,  0, $AC, $20
     db METASPRITE_END
 enSprite_missileTank:
     db  -8, -8, $F0, $00

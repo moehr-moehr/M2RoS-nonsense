@@ -39,6 +39,11 @@ def vramDest_queenStatusBar = $9BE0
 ; Window Tilemap - $9C00-9FFF - $20 bytes/row
 def vramDest_statusBar = $9C00
 def vramDest_itemText  = $9C20
+
+;;;;m2maps: vram for map start window write address
+def vramDest_m2maps = $9C40
+;;;;end m2maps block
+
 ; Queen's head row 3
 ; Queen's head row 4
     

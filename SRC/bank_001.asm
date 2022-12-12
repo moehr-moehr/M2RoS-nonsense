@@ -1,3 +1,8 @@
+; Disassembly of "Metroid2.gb"
+; This file was created with:
+; mgbdis v1.4 - Game Boy ROM disassembler by Matt Currie and contributors.
+; https://github.com/mattcurrie/mgbdis
+
 SECTION "ROM Bank $001", ROMX[$4000], BANK[$1]
 
 ; 01:4000
@@ -100,9 +105,18 @@ VBlank_updateStatusBar: ;{ 01:493E
     ld [hl+], a
     
     ; Skip over missile icon (drawn previously)
-    inc hl
-    inc hl
-    inc hl
+        ; m2maps: draw tiles to accomadate new pause hud
+        ; don't inc hl since we are drawing three new tiles
+        ; inc hl
+        ; inc hl
+        ; inc hl
+            ld a, tile_white
+            ld [hl+], a
+            ld a, tile_missile
+            ld [hl+], a
+            ld a, tile_colon
+            ld [hl+], a
+        ; end m2maps block
     
     ; Draw Samus' missiles (hundreds digit)
     ld a, [samusDispMissilesHigh]
@@ -123,7 +137,12 @@ VBlank_updateStatusBar: ;{ 01:493E
     
     ; Skip over metroid icon
     inc hl
-    inc hl
+        ; m2maps: redraw blank tile to accomodate new pause hud
+        ; inc hl
+            ;comments out inc above from OG src
+            ld a, tile_blank
+            ld [hl+], a
+        ; end m2maps block
     inc hl
     inc hl
 
@@ -170,25 +189,26 @@ VBlank_updateStatusBar: ;{ 01:493E
             ld [hl], a
             ret
     .else_C:
-        ld a, [metroidLCounterDisp]
-        cp $ff
-        jr z, .else_E
-            ; Draw normal L counter (tens digit)
-            and $f0
-            swap a
-            add $a0
-            ld [hl+], a
-            ; Ones digit
-            ld a, [metroidLCounterDisp]
-            and $0f
-            add $a0
-            ld [hl], a
-            ret
-        .else_E:
-            ; Draw blank L counter "--"
-            ld a, $9e ; Dash
-            ld [hl+], a
-            ld [hl], a
+;moved to bank 10 during pause sprite handling
+;        ld a, [metroidLCounterDisp]
+;        cp $ff
+;        jr z, .else_E
+;            ; Draw normal L counter (tens digit)
+;            and $f0
+;            swap a
+;            add $a0
+;            ld [hl+], a
+;            ; Ones digit
+;            ld a, [metroidLCounterDisp]
+;            and $0f
+;            add $a0
+;            ld [hl], a
+;            ret
+;        .else_E:
+;            ; Draw blank L counter "--"
+;            ld a, $9e ; Dash
+;            ld [hl+], a
+;            ld [hl], a
             ret
 ;}
 ;} end proc
@@ -457,7 +477,6 @@ drawSamusSprite: ;{ 01:4B62
     ld b, a
     ldh a, [hSpriteXPixel]
     ld c, a
-
     .spriteLoop:
         ; No sprite flipping logic here
         ; Load y coordinate
@@ -961,7 +980,10 @@ createNewSave: ;{ 01:4E1C
     ; Copy initial save file to save buffer
     ld hl, initialSaveFile
     ld de, saveBuffer
-    ld b, $26
+        ; m2maps: use new sram width for loop length instead of OG src of $26
+            ; ld b, $26
+            ld b, sram_total
+        ; end m2maps block
     .loadLoop:
         ld a, [hl+]
         ld [de], a
@@ -997,7 +1019,10 @@ loadSaveFile: ;{ 01:4E33
     
     ; Copy save file to save buffer
     ld de, saveBuffer
-    ld b, $26
+        ; m2maps: use new sram width for loop length instead of OG src of $26
+            ; ld b, $26
+            ld b, sram_total
+        ; end m2maps block
     .loadLoop:
         ld a, [hl+]
         ld [de], a
@@ -2984,8 +3009,10 @@ miscIngameTasks: ;{ 01:57F2
     ; Skip this if in the Queen fight
     ld a, [queen_roomFlag]
     cp $11
-    jr z, .endIf_B
-        ; Check if window is active
+            ; m2maps: needs to jp instead of jr to reach branch head
+                ; jr z, .endIf_B
+                jp z, .endIf_B
+            ; end m2maps block
         ldh a, [rLCDC]
         bit 5, a
         jr nz, .endIf_C
@@ -2994,8 +3021,20 @@ miscIngameTasks: ;{ 01:57F2
             ldh [rLCDC], a
         .endIf_C:
         
-        ld a, $88 ; Default window position
-        ldh [rWY], a
+            ; m2maps: calls new routine instead of simply adjusting window
+            ; ld a, $88 ; Default window position
+            ; ldh [rWY], a
+                ldh a, [gameMode]
+                cp a, gameMode_paused
+                jr z, .m2maps_isPausedLoadMap
+                ld a, windowHeight_hud
+                ldh [rWY], a
+                jr .m2maps_windowSet
+            .m2maps_isPausedLoadMap:
+                ld a, windowHeight_map
+                ldh [rWY], a
+            .m2maps_windowSet:
+            ; end m2maps block
         ; Check different cases for raising the window
         ld a, [saveContactFlag] ; Only unset by door transitions and this function
         and a
@@ -3003,17 +3042,45 @@ miscIngameTasks: ;{ 01:57F2
             ; Check if item being collected
             ld a, [itemCollected_copy]
             and a
-            jr z, .endIf_B
+            jp z, .endIf_B
                 ld a, [itemCollected_copy]
                 cp $0b ; Check if not a common item or refill
-                jr nc, .endIf_B
-                    ld a, $80 ; Higher window position
+                jp nc, .endIf_B
+                    ld a, windowHeight_text ; Higher window position
                     ldh [rWY], a
-                    jr .endIf_B
+                    jp .endIf_B
         .else_D:
             ; Touching a save point
-            ld a, $80 ; Higher window position
+            ld a, windowHeight_text ; Higher window position
             ldh [rWY], a
+                ; m2maps: draw save text to HUD
+                ; reset half-tile behind metroid
+                    ld a, tile_blank
+                    ld [$9c0f], a
+                    ld [$9c20], a
+                    ld [$9c26], a
+                	ld [$9c27], a
+                	ld [$9c28], a
+                	ld [$9c29], a
+                	ld [$9c2a], a
+                	ld [$9c2b], a
+                	ld [$9c2c], a
+                	ld [$9c2d], a
+                	ld [$9c2e], a
+                	ld [$9c2f], a
+                	ld [$9c30], a
+                ; Load "SAVE:" text:
+                	ld a, tile_S
+                	ld [$9c21], a
+                	ld a, tile_A
+                	ld [$9c22], a
+                	ld a, tile_V
+                	ld [$9c23], a
+                	ld a, tile_E
+                	ld [$9c24], a
+                	ld a, tile_COL
+                	ld [$9c25], a
+                ; end m2maps block
             ; Don't allow saving while "Completed" is displayed
             ld a, [saveMessageCooldownTimer]
             and a
@@ -3297,11 +3364,7 @@ drawEnemySprite_getInfo: ;{ 01:5A9A
     inc l
     xor [hl] ; Stun counter
     and $f0 ; Mask out lower bits
-if !def(COLOURHACK)
     ld [drawEnemy_attr], a
-else
-    jp colour_7B87
-endc
 ret ;}
 
 ; 01:5AB1
@@ -4131,7 +4194,6 @@ fadeIn: ;{ 01:7A45
     ld hl, .fadeTable
     ; Use upper nybble as index into .fadeTable
     ld a, [fadeInTimer]
-if !def(COLOURHACK)
     and $f0
     swap a
     ld e, a
@@ -4140,17 +4202,7 @@ if !def(COLOURHACK)
     ; Load palette
     ld a, [hl]
     ld [bg_palette], a
-else
-    sub $0E
-    srl a
-    srl a
-    ld [colour_D44B], a
-    jr .end_hijack
-    db $D0 ; Partial instrunction
-endc
     ld [ob_palette0], a
-    
-.end_hijack
     ; Decrement timer
     ld a, [fadeInTimer]
     dec a
@@ -4400,8 +4452,13 @@ saveFileToSRAM: ;{ 01:7ADF
     
     ; Save displayed metroid count
     ld a, [metroidCountDisplayed]
-    ld [hl], a
-    
+    ld [hl+], a
+        ; m2maps: display total items and collected items to be tracked
+            ld a, [mapItemsFound]
+            ld [hl+], a
+            ld a, total_items
+            ld [hl+], a
+        ; end m2maps block
     ; Disable SRAM
     ld a, $00
     ld [$0000], a
@@ -4420,23 +4477,5 @@ saveFileToSRAM: ;{ 01:7ADF
     ld a, $04
     ldh [gameMode], a
 ret ;}
-
-if def(COLOURHACK)
-    colour_7B87:
-    ;{
-        ld b, a
-        ld de, $0005
-        add hl, de
-        ld a, [hl]
-        or a
-        ld a, b
-        jr z, .endIf
-            or $03
-            .endIf
-            
-        ld [drawEnemy_attr], a
-        ret
-    ;}
-endc
 
 bank1_freespace: ; 1:7B87 - Freespace (filled with $00)

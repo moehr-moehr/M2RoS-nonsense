@@ -1,3 +1,8 @@
+; Disassembly of "Metroid2.gb"
+; This file was created with:
+; mgbdis v1.4 - Game Boy ROM disassembler by Matt Currie and contributors.
+; https://github.com/mattcurrie/mgbdis
+
 SECTION "ROM Bank $005", ROMX[$4000], BANK[$5]
 
 titleCreditsBank:
@@ -54,11 +59,7 @@ credits_loadFont: ;{ 05:4030
     ld bc, $0200
     ld hl, gfx_creditsFont
     ld de, vramDest_creditsFont
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
 ret ;}
 
 ;------------------------------------------------------------------------------
@@ -121,12 +122,7 @@ VBlank_drawCreditsLine: ;{ 05:403D
 
     call OAM_DMA
 
-if !def(COLOURHACK)
     ld a, $01
-else
-    ret
-    db $01 ; Partial instruction
-endc
     ldh [hVBlankDoneFlag], a
     ; Return from interrupt
     pop hl
@@ -163,20 +159,13 @@ loadTitleScreen: ;{ 05:408F
     ld de, _SCRN0
     ld hl, titleTilemap
     .titleTilemapLoop:
-if !def(COLOURHACK)
         ld a, [hl+]
         ld [de], a
         inc de
         ld a, d
         cp $9c
-else
-        call colour_7F72
-        jr .end_hijack
-        db $9C ; Partial instruction
-endc
     jr nz, .titleTilemapLoop
 
-.end_hijack
     ; Initialize window position
     ld a, $07
     ldh [rWX], a
@@ -214,11 +203,7 @@ endc
 ret ;}
 
 hudBaseTilemap:  ; 05:40F0
-if !def(COLOURHACK)
     db $AF, $AF, $AF, $AF, $AF, $9E, $AF, $AF, $AF, $9F, $9E, $AF, $AF, $AF, $AF, $FF, $FF, $9E, $A3, $A0
-else
-    db $9D, $9D, $9D, $9D, $9D, $9E, $A9, $A9, $AF, $9F, $9E, $A9, $A9, $A9, $AF, $FF, $FF, $9E, $A9, $A9
-endc
 saveTextTilemap: ; 05:4104
     db $FF, $D2, $C0, $D5, $C4, $DE, $DF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF
 
@@ -571,11 +556,7 @@ title_loadGraphics: ;{ 5:42C7
     ld bc, $1000
     ld hl, gfx_titleScreen
     ld de, vramDest_titleChr
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
 ret ;}
 
 ;------------------------------------------------------------------------------
@@ -1201,29 +1182,17 @@ prepareCredits: ;{ 05:587F
     ld bc, $1000
     ld hl, gfx_creditsSprTiles
     ld de, vramDest_creditsSpriteChr
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
     
     ld bc, $0100
     ld hl, gfx_theEnd
     ld de, vramDest_theEnd
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
     
     ld bc, $0100
     ld hl, gfx_creditsNumbers
     ld de, vramDest_creditsNumbers
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
     
     ; Initialize credits text pointer
     ld a, LOW(creditsTextBuffer)
@@ -1303,15 +1272,10 @@ credits_scrollHandler: ;{ 05:593E
         ld [credits_scrollingDone], a
         ret
     .else:
-if !def(COLOURHACK)
         ; Only scroll every 4th frame
         ldh a, [frameCounter]
         and $03
             ret nz
-else
-        call colour_7F97
-        jr .end_hijack
-endc
         ; Scroll a pixel
         ld a, [scrollY]
         inc a
@@ -1319,9 +1283,7 @@ endc
         ; Exit unless we're on an 8-pixel boundary
         ld a, [scrollY]
         and $07
-.end_hijack
             ret nz
-
         ; Adjust cursor position
         ld a, [scrollY]
         add $a0 ; Set Y cursor to just below the bottom of the screen
@@ -1636,63 +1598,6 @@ endc
 
 ; 05:7E34
 gfx_theEnd: incbin "gfx/titleCredits/theEnd.chr"
-
-door1FC:
-if def(COLOURHACK)
-    colour_7F34:
-        db $03, $03, $03, $03, $03, $07, $07, $07, $07, $03, $07, $07, $07, $07, $07, $07, $07, $07, $07, $07
-
-    door1F1:
-        db $E0, $C0, $D1, $10, $08, $41, $10, $00, $8F, $48, $0F, $AE, $0E, $02, $0F, $DE, $0E, $FF
-        
-    door1F2:
-        db $E0, $C0, $D1, $10, $40, $40, $10, $00, $C8, $4E, $C1, $FF
-        
-    door1F3:
-        db $E0, $C0, $D1, $10, $40, $40, $10, $00, $15, $4F, $A9, $FF
-        
-    colour_7F72:
-    ;{
-        ld bc, $0400
-        call colour_3FC0
-        ld a, $FF
-        ldh [rVBK], a
-        ld hl, colour_7F34
-        ld de, vramDest_statusBar
-        ld bc, $0014
-        call copyToVram
-        ld hl, vramDest_itemText
-        ld c, $14
-        ld a, $07
-
-        .loop
-            ldi [hl], a
-            dec c
-        jr nz, .loop
-            
-        xor a
-        ldh [rVBK],a
-        ret
-    ;}
-
-    colour_7F97:
-    ;{
-        ld a, [colour_D454]
-        add a, $4A
-        ld [colour_D454], a
-        jr c, .endIf
-            xor a
-            inc a
-            ret
-        .endIf
-        
-        ld a, [scrollY]
-        inc a
-        ld [scrollY], a
-        and $07
-        ret
-    ;}
-endc
 
 bank5_freespace: ; 05:7F34 -- filled with $00 (nop)
 

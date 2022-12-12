@@ -2469,14 +2469,7 @@ door19D:
     COPY_DATA bg_queenHead.row2, (_SCRN1+$20), $0020
     COPY_DATA bg_queenHead.row3, (_SCRN1+$40), $0020
     COPY_DATA bg_queenHead.row4, (_SCRN1+$60), $0020
-if !def(COLOURHACK)
     ENTER_QUEEN $F, $0F48, $0EAE, $0F02, $0EDE
-else
-    IF_MET_LESS $99, $01F1
-    ; Partial command
-    db $0E
-    dw $0F02, $0EDE
-endc
     END_DOOR
 
 door19E:
@@ -2489,13 +2482,9 @@ door19E:
     ITEM $2
     ESCAPE_QUEEN
     TILETABLE $0
-if !def(COLOURHACK)
     SONG $8
     WARP $E, $C1
     END_DOOR
-else
-    IF_MET_LESS $99, $01F2
-endc
 
 door19F:
     FADEOUT
@@ -2504,13 +2493,9 @@ door19F:
     COLLISION $4
     SOLIDITY $4
     EXIT_QUEEN
-if !def(COLOURHACK)
     TILETABLE $5
     WARP $F, $A9
     END_DOOR
-else
-    IF_MET_LESS $99, $01F3
-endc
 
 door1A0:
     IF_MET_LESS $24, $0188
@@ -2641,6 +2626,7 @@ door1B4:
     END_DOOR
 
 door1B5:
+;unused and swapped out for 01F2
     IF_MET_LESS $34, $01E1
     IF_MET_LESS $42, $01E3
     END_DOOR
@@ -2893,10 +2879,21 @@ door1EF:
 door1F0:
     LOAD_SPR gfx_metGamma
     END_DOOR
-
-if !def(COLOURHACK)
+;;;;m2maps: 2 added door sets, copies of earlier doors to make map transitions work
 door1F1:
+;	copied and modified from door1A0
+    WARP $A, $84
+    IF_MET_LESS $24, $0188
+    IF_MET_LESS $34, $01E3
+    IF_MET_LESS $42, $01E2
+    END_DOOR
 door1F2:
+;	copied and modified from door1B5
+    WARP $A, $83
+    IF_MET_LESS $34, $01E1
+    IF_MET_LESS $42, $01E3
+    END_DOOR
+;;;;end m2maps added door script entries
 door1F3:
 endc
 door1F4:

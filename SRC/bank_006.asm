@@ -1,3 +1,8 @@
+; Disassembly of "Metroid2.gb"
+; This file was created with:
+; mgbdis v1.4 - Game Boy ROM disassembler by Matt Currie and contributors.
+; https://github.com/mattcurrie/mgbdis
+
 SECTION "ROM Bank $006", ROMX[$4000], BANK[$6]
 
 ; Patched in at runtime

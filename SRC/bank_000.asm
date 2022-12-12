@@ -1,9 +1,13 @@
+; Disassembly of "Metroid2.gb"
+; This file was created with:
+; mgbdis v1.4 - Game Boy ROM disassembler by Matt Currie and contributors.
+; https://github.com/mattcurrie/mgbdis
+
 SECTION "ROM Bank $000", ROM0[$0]
 
 ; Note: RSTs 10, 18, 20, 30, and 38 are unused
 RST_00:: jp bootRoutine
 
-SECTION "RST_08", ROM0[$8]
 RST_08:: jp bootRoutine
 
 if def(COLOURHACK)
@@ -33,42 +37,17 @@ RST_28: ; Jump table routine (index = a)
     push de
     pop hl
     jp hl
-;}
 
 SECTION "VBlankInterrupt", ROM0[$40]
 VBlankInterrupt:: jp VBlankHandler
 
-SECTION "LCDCInterrupt", ROM0[$48]
 LCDCInterrupt:: jp LCDCInterruptHandler_farCall
 
-SECTION "TimerOverflowInterrupt", ROM0[$50]
 TimerOverflowInterrupt:: jp TimerOverflowInterruptStub
 
-SECTION "SerialTransferCompleteInterrupt", ROM0[$58]
 SerialTransferCompleteInterrupt:: jp SerialTransferInterruptStub
 
-SECTION "JoypadTransitionInterrupt", ROM0[$60]
 JoypadTransitionInterrupt:: nop
-
-if def(COLOURHACK)
-    SECTION "colour_68", ROM0[$68]
-    colour_switchToBank10:
-    ;{
-        ld [colour_bankBackup], a
-    .noBackup
-        ld a, $10
-        ld [bankRegMirror], a
-        ld [rMBC_BANK_REG], a
-        ret
-    ;}
-    
-    colour_restoreBank:
-    ;{
-        ld [bankRegMirror], a
-        ld [rMBC_BANK_REG], a
-        ret
-    ;}
-endc
 
 SECTION "ROM Header", ROM0[$0100]
 
@@ -116,22 +95,13 @@ VBlankHandler: ;{ 00:0154
     ldh [rSCY], a
     ld a, [scrollX]
     ldh [rSCX], a
-if !def(COLOURHACK)
     ; Update palettes
     ld a, [bg_palette]
     ldh [rBGP], a
     ld a, [ob_palette0]
     ldh [rOBP0], a
-else
-    ld a, $10
-    ld [rMBC_BANK_REG],a
-    call colour_441E
-    jr .end_hijack
-endc
     ld a, [ob_palette1]
     ldh [rOBP1], a    
-
-.end_hijack
     ; Decrement countdown timer every frame
     ld a, [countdownTimerLow]
     sub $01
@@ -173,21 +143,23 @@ endc
     jr z, .else_B
         ld a, [currentLevelBank]
         ld [rMBC_BANK_REG], a
-if !def(COLOURHACK)
         call VBlank_updateMap
-else
-        call VBlank_updateMap.noBankRestore
-endc
         jr .endIf_B
     .else_B:
+            ; m2maps: skip updating gameplay status bar if game is paused
+                ld a, [gameMode]
+                cp a, gameMode_paused
+                jr nz, .skipUpdateHudPaused
+                    jr .endIf_B
+                .skipUpdateHudPaused:			
+            ; end m2maps block
         ld a, BANK(VBlank_updateStatusBar)
         ld [rMBC_BANK_REG], a
         call VBlank_updateStatusBar
     .endIf_B:
+		
 ; End vblank
     call OAM_DMA ; Sprite DMA
-    
-.colour_01CA
     ld a, [bankRegMirror]
     ld [rMBC_BANK_REG], a
     ld a, $01
@@ -264,11 +236,7 @@ bootRoutine: ;{ 00:01FB
     
     ; Init stack pointer before calling a function
     ld sp, stack.bottom ; $DFFF
-if !def(COLOURHACK)
     call initializeAudio_longJump
-else
-    call colour_hijack_init
-endc
     ; Enable SRAM (?)
     ld a, $0a
     ld [$0000], a
@@ -429,19 +397,12 @@ gameMode_None: ; 00:031B
 
 ; Called when frame is done
 waitForNextFrame: ;{ 00:031C
-if !def(COLOURHACK)
     db $76 ; HALT
     .vBlankNotDone:
         ldh a, [hVBlankDoneFlag]
         and a
     jr z, .vBlankNotDone
-else
-    call colour_3FCC
-    jr .end_hijack
-    db $FB ; Partial instruction
-endc
 
-.end_hijack
     ; Increment frame counter
     ldh a, [frameCounter]
     inc a
@@ -630,6 +591,10 @@ gameMode_LoadA: ;{ 00:03B5
     ld a, [saveBuf_metroidCountDisplayed]
     ld [metroidCountDisplayed], a
 
+        ; m2maps: account for SRAM for item count
+            ld a, [saveBuf_startItems]
+            ld [mapItemsFound], a
+        ; end m2maps block
     ; Clear variables
     xor a
     ld [doorScrollDirection], a
@@ -726,6 +691,14 @@ gameMode_LoadB: ;{ 00:0464
     ldh a, [hCameraXPixel]
     sub $30
     ld [scrollX], a
+
+        ; m2maps: load initial pauseMap
+            callFar m2maps_farLoadMapTiles
+            switchBankVar [currentLevelBank]
+            ; ld a, [currentLevelBank]
+            ; ld [bankRegMirror], a
+            ; ld [rMBC_BANK_REG], a
+        ; end m2maps block
 
     ; Enable LCD
     ld a, $e3
@@ -893,21 +866,13 @@ loadGame_loadGraphics: ;{ 00:05FD
     ld bc, $0100
     ld hl, gfx_commonItems
     ld de, vramDest_commonItems
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
     ; Load default power suit and common sprite/HUD tiles
     switchBank gfx_samusPowerSuit
     ld bc, $0b00
     ld hl, gfx_samusPowerSuit
     ld de, vramDest_samus
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
     ; Load enemy graphics page
     switchBank gfx_enemiesA ; Unforunately, save files don't save the bank they load enemy graphics from
     ld bc, $0400
@@ -916,11 +881,7 @@ endc
     ld a, [saveBuf_enGfxSrcHigh]
     ld h, a
     ld de, vramDest_enemies
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
     ; Load font if loading from file
     ld a, [loadingFromFile]
     and a
@@ -929,11 +890,7 @@ endc
         ld bc, $0200
         ld hl, gfx_itemFont
         ld de, vramDest_itemFont
-if !def(COLOURHACK)
         call copyToVram
-else
-        call colour_3F68
-endc
     .endIf:
     ; Load BG graphic tiles
     switchBankVar [saveBuf_bgGfxSrcBank]
@@ -943,11 +900,7 @@ endc
     ld a, [saveBuf_bgGfxSrcHigh]
     ld h, a
     ld de, vramDest_bgTiles
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
 ret
 ;}
 
@@ -1334,24 +1287,15 @@ mapUpdate_writeToBuffer: ;{ 00:0886
     ld [hl+], a
     ldh a, [hMapUpdate.destAddrHigh]
     ld [hl+], a
-if !def(COLOURHACK)
     ; Load tiles from temp to WRAM buffer
     ld a, [tempMetatile.topLeft]
     ld [hl+], a
     ld a, [tempMetatile.topRight]
-else
-    rst $10
-    call colour_4492
-    rst $18
-    jr .end_hijack
-endc
     ld [hl+], a
     ld a, [tempMetatile.bottomLeft]
     ld [hl+], a
     ld a, [tempMetatile.bottomRight]
     ld [hl+], a
-
-.end_hijack
     ; Save the WRAM buffer address
     ld a, l
     ldh [hMapUpdate.buffPtrLow], a
@@ -1362,7 +1306,6 @@ ret
 
 ; Only call this when rendering is disabled
 VBlank_updateMap: ;{ 00:08CF
-if !def(COLOURHACK)
     ld de, mapUpdateBuffer - 1 ;$ddff
 
     .loop:
@@ -1382,19 +1325,6 @@ if !def(COLOURHACK)
         ; Load and write top-right tile
         ld a, h
         and $9b
-else
-    rst $10
-    call colour_44AC
-    rst $18
-    jr .break
-    
-.noBankRestore
-    ld a, $10
-    ld [rMBC_BANK_REG], a
-    call colour_44AC
-    jr .break
-    db $9B ; Partial instruction
-endc
         ld h, a
         inc de
         ld a, [de]
@@ -1415,11 +1345,7 @@ endc
         inc de
         ld a, [de]
         ld [hl], a
-if !def(COLOURHACK)
     jr .loop
-else
-    jr $08D2 ; Making output bytes match
-endc
     .break:
 
     xor a
@@ -1440,7 +1366,18 @@ handleCamera: ;{ 00:08FE
     or b
     ld e, a    
     ld d, $00
-    
+        ; m2maps debug only: write to DD60 debug table and make Samus invincible
+        ; ld a, [currentLevelBank]
+        ; ld [$dd72], a
+        ; ld a, [hSamusYScreen]
+        ; ld [$dd73], a
+        ; ld a, [hSamusXScreen]
+        ; ld [$dd74], a
+        ; ld a, $99
+        ; ld [samusCurHealthLow], a
+        ; ld [samusDispHealthLow], a
+		; end m2maps debug block
+	
     ; Load scroll data for screen
     ld hl, map_scrollData ;$4200
     add hl, de
@@ -3915,6 +3852,7 @@ poseFunc_crouch: ;{ 00:15F4 - $04: Crouching
 ret
 ;}
 
+
 poseFunc_morphBall: ;{ 00:1701 - $05: Morph ball
     ; Start falling if nothing below
     call collision_samusBottom
@@ -6261,6 +6199,10 @@ executeDoorScript: ;{ 00:239C
     .doorToken_warp:
     cp $40 ; WARP {
     jr nz, .doorToken_escapeQueen
+            ; m2maps: set new map flag
+                ld a, set_new_map_flag
+                ld [loadNewMapFlag], a
+            ; end m2maps block
         call door_warp
         ; Set exit status to indicate that enemy spawn flags should be refreshed
         ;  (although loadDoorIndex does that already so this might be unnecessary)
@@ -6453,7 +6395,6 @@ executeDoorScript: ;{ 00:239C
             ld hl, .fadePaletteTable
             ; Use upper nybble of timer to index into .fadePaletteTable
             ld a, [countdownTimerLow]
-if !def(COLOURHACK)
             and $f0
             swap a
             ld e, a
@@ -6463,18 +6404,6 @@ if !def(COLOURHACK)
             ld a, [hl]
             ld [bg_palette], a
             ld [ob_palette0], a
-else
-            ld e, a
-            ld a, $2F
-            sub e
-            srl a
-            srl a
-            ld [colour_D44B], a
-            jr .end_hijack
-            db $7F, $D0 ; Partial instruction
-endc
-
-.end_hijack
             ; Wait a frame
             call waitOneFrame
             ; Exit loop once we've decremented past $0E
@@ -6577,11 +6506,7 @@ endc
 
     .doorToken_item:
     cp $d0 ; ITEM {
-if !def(COLOURHACK)
     jp nz, .nextToken
-else
-    jp nz, colour_3FDD
-endc
         ; Load item graphics
         ; Set source bank
         ld a, BANK(gfx_items)
@@ -6667,51 +6592,57 @@ endc
             ; Transfer graphics
             call beginGraphicsTransfer
         ;}
+; m2maps - this block has been moved to item collection handler and edited    
+;        pop hl
+;        
+;        ; Load item text {
+;        ; Set source bank
+;        ld a, BANK(itemTextPointerTable)
+;        ld [bankRegMirror], a
+;        ld [vramTransfer_srcBank], a
+;        ld [rMBC_BANK_REG], a
+;        ; Read lower nybble of token
+;        ld a, [hl+]
+;        push hl
+;            and $0f
+;            ; Index into text pointer table
+;            ld e, a
+;            ld d, $00
+;            sla e
+;            rl d
+;            ld hl, itemTextPointerTable
+;            add hl, de
+;            ; Load pointer to HL
+;            ld a, [hl+]
+;            ld e, a
+;            ld a, [hl]
+;            ld h, a
+;            ld a, e
+;            ld l, a
+;            ; Set source address of text
+;            ld a, l
+;            ldh [hVramTransfer.srcAddrLow], a
+;            ld a, h
+;            ldh [hVramTransfer.srcAddrHigh], a
+;            ; Set destination address of text
+;            ld a, LOW(vramDest_itemText)
+;            ldh [hVramTransfer.destAddrLow], a
+;            ld a, HIGH(vramDest_itemText)
+;            ldh [hVramTransfer.destAddrHigh], a
+;            ; Set length of string (16 letters)
+;            ld a, $10
+;            ldh [hVramTransfer.sizeLow], a
+;            ld a, $00
+;            ldh [hVramTransfer.sizeHigh], a
+;            ; Transfer graphics
+;            call beginGraphicsTransfer
+;        pop hl ;}
+; end m2maps relocated code
         pop hl
-        
-        ; Load item text {
-        ; Set source bank
-        ld a, BANK(itemTextPointerTable)
-        ld [bankRegMirror], a
-        ld [vramTransfer_srcBank], a
-        ld [rMBC_BANK_REG], a
-        ; Read lower nybble of token
-        ld a, [hl+]
-        push hl
-            and $0f
-            ; Index into text pointer table
-            ld e, a
-            ld d, $00
-            sla e
-            rl d
-            ld hl, itemTextPointerTable
-            add hl, de
-            ; Load pointer to HL
-            ld a, [hl+]
-            ld e, a
-            ld a, [hl]
-            ld h, a
-            ld a, e
-            ld l, a
-            ; Set source address of text
-            ld a, l
-            ldh [hVramTransfer.srcAddrLow], a
-            ld a, h
-            ldh [hVramTransfer.srcAddrHigh], a
-            ; Set destination address of text
-            ld a, LOW(vramDest_itemText)
-            ldh [hVramTransfer.destAddrLow], a
-            ld a, HIGH(vramDest_itemText)
-            ldh [hVramTransfer.destAddrHigh], a
-            ; Set length of string (16 letters)
-            ld a, $10
-            ldh [hVramTransfer.sizeLow], a
-            ld a, $00
-            ldh [hVramTransfer.sizeHigh], a
-            ; Transfer graphics
-            call beginGraphicsTransfer
-        pop hl ;}
-    jr .nextToken ;}
+            ; m2maps: needs to inc hl due to relocated code
+                inc hl
+            ; end m2maps block
+        jr .nextToken
 
 .nextToken:
     ; Wait a frame before reading another token
@@ -6730,6 +6661,25 @@ endc
     ld [doorExitStatus], a
     ; Otherwise unused variable
     ld [wramUnknown_D0A8], a
+            ; m2maps: load new m2map tilemap to window VRAM during warp screen transition type
+                ld a, [loadNewMapFlag]
+                cp a, set_new_map_flag
+                jr nz, .next
+                ; ISSUE: weirdly commenting out next line and just using these three
+                ; lines seems to get rid of the white flash and still loads tiles properly.....
+                ; call disableLCD
+                        ldh a, [rLCDC]
+                        and $7f
+                        ldh [rLCDC], a
+                    callFar m2maps_farLoadMapTiles
+                    ld a, enable_PPU_flag
+                    ldh [rLCDC], a
+                    switchBankVar [currentLevelBank]
+                    ; ld a, [currentLevelBank]
+                    ; ld [bankRegMirror], a
+                    ; ld [rMBC_BANK_REG], a
+                .next:
+            ; end m2maps block
 ret ;}
 
 ; Door script load graphics routine
@@ -7449,18 +7399,10 @@ VBlank_updateMapDuringTransition: ;{ 00:2B8F
     ld a, [mapUpdateFlag]
     and a
         jr z, VBlank_vramDataTransfer.exit
-if !def(COLOURHACK)
     ; Pretty sure this bankswitch is not needed
     switchBankVar [currentLevelBank]
     ; Update map
     call VBlank_updateMap
-else
-    ld a, [currentLevelBank]
-    ld [rMBC_BANK_REG], a
-    call VBlank_updateMap.noBankRestore
-    jr VBlank_vramDataTransfer.exit
-    db $08 ; Partial instruction
-endc
 jr VBlank_vramDataTransfer.exit ;}
 
 VBlank_vramDataTransfer: ;{ 00:2BA3
@@ -7469,20 +7411,12 @@ VBlank_vramDataTransfer: ;{ 00:2BA3
     and a
         jp nz, VBlank_variaAnimation
 
-if !def(COLOURHACK)
     ; Load transfer parameters
     ld a, [vramTransfer_srcBank]
     ld [rMBC_BANK_REG], a
     ldh a, [hVramTransfer.sizeLow]
     ld c, a
     ldh a, [hVramTransfer.sizeHigh]
-else
-    ld a, $10
-    ld [rMBC_BANK_REG], a
-    call colour_4441
-    jr .end_hijack
-    db $B6 ; Partial instruction
-endc
     ld b, a
     ldh a, [hVramTransfer.srcAddrLow]
     ld l, a
@@ -7515,8 +7449,6 @@ endc
     ldh [hVramTransfer.destAddrLow], a
     ld a, d
     ldh [hVramTransfer.destAddrHigh], a
-
-.end_hijack
     ; Clear update flag if done
     ld a, b
     or c
@@ -7625,20 +7557,12 @@ waitOneFrame: ;{ 00:2C5E
     push hl
     call handleAudio_longJump
     pop hl
-if !def(COLOURHACK)
     db $76 ; halt
     ; Wait for VBlank to finish
     .vBlankNotDone:
         ldh a, [hVBlankDoneFlag]
         and a
     jr z, .vBlankNotDone
-else
-    call colour_3FCC
-    jr .end_hijack
-    db $FB ; Partial instruction
-endc
-
-.end_hijack
     ; Increment frame counter
     ldh a, [frameCounter]
     inc a
@@ -7749,6 +7673,18 @@ tryPausing: ;{ 00:2C79
     ; Set game mode
     ld a, $08
     ldh [gameMode], a
+        ; m2maps: when pausing, clear all sprites
+        ; then run new map sprite setup routine
+              ; ISSUE: again with the weird not-good way of updating the screen
+                ; call disableLCD
+                ldh a, [rLCDC]
+                and $7f
+                ldh [rLCDC], a
+            call clearAllOam_longJump
+            callFar m2maps_pauseAdjustSpriteSetup
+            ld a, enable_PPU_flag
+            ldh [rLCDC], a
+        ; end m2maps block
 ret ;}
 
 gameMode_Paused: ;{ 00:2CED
@@ -7774,6 +7710,9 @@ gameMode_Paused: ;{ 00:2CED
         ret z
 
     ; Return to main game mode if start is pressed
+        ; m2maps: clear all map sprites when unpausing
+            call clearAllOam_longJump
+        ; end m2maps block
     ld a, $93
     ld [bg_palette], a
     ld [ob_palette0], a
@@ -9806,7 +9745,6 @@ gameMode_dead: ;{ 00:36B0
     ld de, $8800
     ld bc, $1000
     .loadGfxLoop:
-if !def(COLOURHACK)
         ld a, [hl+]
         ld [de], a
         inc de
@@ -9821,25 +9759,12 @@ if !def(COLOURHACK)
     .loadTextLoop:
         ld a, [hl+]
         cp $80
-else
-    call colour_3F68
-    ld hl, gameOverText
-    ld de, $9800 + (8*$20) + $6 ; Tilemap address for text
-    ld bc, $0009
-    call colour_3FC0
-    jr .end_hijack
-endc
             jr z, .exitLoop
         ld [de], a
         inc de
-if !def(COLOURHACK)
     jr .loadTextLoop    
-else
-    jr $36EC ; Making output bytes match
-endc
     .exitLoop:
     
-.end_hijack
     ; Reset scroll
     xor a
     ld [scrollY], a
@@ -9942,6 +9867,39 @@ handleItemPickup: ;{ 00:372F
         ld a, $00
         ld [songInterruptionRequest], a
     .endIf_C:
+        ; m2maps: increment map items found if first beam or non-refill, and load item message
+            callFar m2maps_calcFoundEquipment
+            ;relocated from old item content handler, but probably poorly reimplemented:
+                ld a, BANK(itemTextPointerTable)
+                ld [bankRegMirror], a
+                ld [rMBC_BANK_REG], a
+                push hl
+                    call disableLCD
+                ld hl, itemTextPointerTable
+                ld d, $00
+                ld a, [itemCollected]
+                sla a
+                ld e, a
+                add hl, de
+                ld e, [hl]
+                inc hl
+                ld d, [hl]
+                ld h, d
+                ld l, e
+                ld e, LOW(vramDest_itemText) +1	;21
+                ld d, HIGH(vramDest_itemText)	;9c
+                ld c, $10
+                .loopWriteItem
+                    ld a, [hl+]
+                    ld [de], a
+                    inc de
+                    dec c
+                    jr nz, .loopWriteItem
+                pop hl
+            ;end relocation and bad reimplementation
+            ld a, enable_PPU_flag
+            ldh [rLCDC], a
+        ; end m2maps block
 
     ; Jump to pick-up specific routine
     ld a, b
@@ -10654,11 +10612,7 @@ loadGame_copyItemToVram: ;{ 00:3C3F
     ldh a, [hTemp.b]
     ld h, a
   .unusedEntry:
-if !def(COLOURHACK)
     call copyToVram
-else
-    call colour_3F68
-endc
 ret ;}
 
 ; Unreferenced procedure, branches to the function above
@@ -10678,15 +10632,8 @@ ret ;}
 
 ; 00:3C6A - Load credits to SRAM
 loadCreditsText: ;{
-if !def(COLOURHACK)
     switchBank creditsText
     ld hl, creditsText ;$7920
-else
-    ld a, $10
-    ld [bankRegMirror], a
-    ld [rMBC_BANK_REG], a
-    ld hl, colour_467B
-endc
     ld de, creditsTextBuffer
     ; Enable SRAM
     ld a, $0a
@@ -10825,14 +10772,7 @@ loadEnemySaveFlags_longJump: ; 00:3E0A
 ret
 
 VBlank_drawCreditsLine_longJump: ; 00:3E1E
-if !def(COLOURHACK)
     jpLong VBlank_drawCreditsLine
-else
-    ld a, $05
-    ld [rMBC_BANK_REG], a
-    call VBlank_drawCreditsLine
-    jp colour_3FD2
-endc
 
 gameMode_prepareCredits: ; 00:3E29
     jpLong prepareCredits

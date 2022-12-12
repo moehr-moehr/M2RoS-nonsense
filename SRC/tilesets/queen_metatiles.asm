@@ -9,8 +9,13 @@
     db $57, $58, $59, $5a, $57, $58, $ff, $ff, $b0, $b0, $b0, $b0, $b0, $b0, $5b, $b0
     db $b0, $b0, $5b, $5b, $5b, $5b, $ff, $ff, $b0, $5b, $5b, $ff, $5e, $5e, $59, $5a
     db $5d, $5e, $59, $5a, $5c, $5c, $5c, $5c, $57, $58, $5c, $5c, $5d, $5e, $ff, $ff
+if !def(COLOURHACK)
     db $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
     db $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
+else
+    db $ff, $ff, $9d, $9d, $ff, $ff, $9d, $9e, $ff, $ff, $a9, $a9, $ff, $ff, $af, $9f
+    db $ff, $ff, $9e, $a9, $ff, $ff, $af, $ff, $ff, $ff, $ff, $9e, $ff, $ff, $ff, $ff
+endc
     db $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
     db $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff
     db $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff, $ff

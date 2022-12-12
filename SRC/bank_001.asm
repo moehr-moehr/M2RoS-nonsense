@@ -1,8 +1,3 @@
-; Disassembly of "Metroid2.gb"
-; This file was created with:
-; mgbdis v1.4 - Game Boy ROM disassembler by Matt Currie and contributors.
-; https://github.com/mattcurrie/mgbdis
-
 SECTION "ROM Bank $001", ROMX[$4000], BANK[$1]
 
 ; 01:4000
@@ -105,9 +100,6 @@ VBlank_updateStatusBar: ;{ 01:493E
     ld [hl+], a
     
     ; Skip over missile icon (drawn previously)
-    inc hl
-    inc hl
-    inc hl
     
     ; Draw Samus' missiles (hundreds digit)
     ld a, [samusDispMissilesHigh]
@@ -127,7 +119,6 @@ VBlank_updateStatusBar: ;{ 01:493E
     ld [hl+], a
     
     ; Skip over metroid icon
-    inc hl
     inc hl
     inc hl
     inc hl
@@ -175,25 +166,6 @@ VBlank_updateStatusBar: ;{ 01:493E
             ld [hl], a
             ret
     .else_C:
-        ld a, [metroidLCounterDisp]
-        cp $ff
-        jr z, .else_E
-            ; Draw normal L counter (tens digit)
-            and $f0
-            swap a
-            add $a0
-            ld [hl+], a
-            ; Ones digit
-            ld a, [metroidLCounterDisp]
-            and $0f
-            add $a0
-            ld [hl], a
-            ret
-        .else_E:
-            ; Draw blank L counter "--"
-            ld a, $9e ; Dash
-            ld [hl+], a
-            ld [hl], a
             ret
 ;}
 ;} end proc
@@ -966,7 +938,6 @@ createNewSave: ;{ 01:4E1C
     ; Copy initial save file to save buffer
     ld hl, initialSaveFile
     ld de, saveBuffer
-    ld b, $26
     .loadLoop:
         ld a, [hl+]
         ld [de], a
@@ -1002,7 +973,6 @@ loadSaveFile: ;{ 01:4E33
     
     ; Copy save file to save buffer
     ld de, saveBuffer
-    ld b, $26
     .loadLoop:
         ld a, [hl+]
         ld [de], a
@@ -2989,8 +2959,6 @@ miscIngameTasks: ;{ 01:57F2
     ; Skip this if in the Queen fight
     ld a, [queen_roomFlag]
     cp $11
-    jr z, .endIf_B
-        ; Check if window is active
         ldh a, [rLCDC]
         bit 5, a
         jr nz, .endIf_C
@@ -2999,8 +2967,6 @@ miscIngameTasks: ;{ 01:57F2
             ldh [rLCDC], a
         .endIf_C:
         
-        ld a, $88 ; Default window position
-        ldh [rWY], a
         ; Check different cases for raising the window
         ld a, [saveContactFlag] ; Only unset by door transitions and this function
         and a
@@ -3008,16 +2974,11 @@ miscIngameTasks: ;{ 01:57F2
             ; Check if item being collected
             ld a, [itemCollected_copy]
             and a
-            jr z, .endIf_B
                 ld a, [itemCollected_copy]
                 cp $0b ; Check if not a common item or refill
-                jr nc, .endIf_B
-                    ld a, $80 ; Higher window position
                     ldh [rWY], a
-                    jr .endIf_B
         .else_D:
             ; Touching a save point
-            ld a, $80 ; Higher window position
             ldh [rWY], a
             ; Don't allow saving while "Completed" is displayed
             ld a, [saveMessageCooldownTimer]
@@ -3302,7 +3263,11 @@ drawEnemySprite_getInfo: ;{ 01:5A9A
     inc l
     xor [hl] ; Stun counter
     and $f0 ; Mask out lower bits
+if !def(COLOURHACK)
     ld [drawEnemy_attr], a
+else
+    jp colour_7B87
+endc
 ret ;}
 
 ; 01:5AB1
@@ -4132,6 +4097,7 @@ fadeIn: ;{ 01:7A45
     ld hl, .fadeTable
     ; Use upper nybble as index into .fadeTable
     ld a, [fadeInTimer]
+if !def(COLOURHACK)
     and $f0
     swap a
     ld e, a
@@ -4140,7 +4106,17 @@ fadeIn: ;{ 01:7A45
     ; Load palette
     ld a, [hl]
     ld [bg_palette], a
+else
+    sub $0E
+    srl a
+    srl a
+    ld [colour_D44B], a
+    jr .end_hijack
+    db $D0 ; Partial instrunction
+endc
     ld [ob_palette0], a
+    
+.end_hijack
     ; Decrement timer
     ld a, [fadeInTimer]
     dec a
@@ -4390,8 +4366,6 @@ saveFileToSRAM: ;{ 01:7ADF
     
     ; Save displayed metroid count
     ld a, [metroidCountDisplayed]
-    ld [hl], a
-    
     ; Disable SRAM
     ld a, $00
     ld [$0000], a
@@ -4410,5 +4384,23 @@ saveFileToSRAM: ;{ 01:7ADF
     ld a, $04
     ldh [gameMode], a
 ret ;}
+
+if def(COLOURHACK)
+    colour_7B87:
+    ;{
+        ld b, a
+        ld de, $0005
+        add hl, de
+        ld a, [hl]
+        or a
+        ld a, b
+        jr z, .endIf
+            or $03
+            .endIf
+            
+        ld [drawEnemy_attr], a
+        ret
+    ;}
+endc
 
 bank1_freespace: ; 1:7B87 - Freespace (filled with $00)

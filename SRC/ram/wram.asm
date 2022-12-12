@@ -1332,6 +1332,67 @@ wramUnknown_D0A8: ds 1 ; $D0A8 - Set to 0 by $239C
 
 
 ; $D100..$D5FF - Unused ($500 bytes!)
+if def(COLOURHACK)
+    ; colour_palettes must be all within a 100h byte page
+    def colour_palettes = $D100 ; $D100..7F: Palettes
+    ;{
+        ; $D100 + p * 10h + c * 4     = BG     palette p colour c
+        ; $D100 + p * 10h + c * 4 + 2 = sprite palette p colour c
+    ;}
+    
+    def colour_D180 = $D180 ; $D180..FF: Palettes before brightness calculations. Palette changes here don't affect $D100..7F until darkness level changes
+    def colour_D200 = $D200 ; $D200..D37F: First byte of each tile of bank+20h VRAM tiles transfer (must be 100h aligned). If indexed by sprite tile number, colour palette index for sprite, unless sprite uses palette 1, in which case 3 means use colour palette 1, otherwise use colour palette 3
+    ;{
+        ; $D200..D27F: Sprite only tiles
+        ; $D280..D2FF: Sprite and background tiles
+        ; $D300..D37F: Background only tiles. Level graphics
+    ;}
+    def colour_D380 = $D380 ; $D380..BF: First 40h bytes of VRAM transfers are redirected to here
+                            ; $D3C0..FF: [$D300 + ±[$D380 + i]] for i = 0..3Fh if VRAM tilemap transfer
+
+    def colour_D420 = $D420 ; $D420..31: Queen update tiles I think
+    
+    def colour_vblankStartTime = $D440 ; Set to [$FF04] at start of v-blank handler. Note that $FF04 overflows every ~3.5 scanlines (v-blank is 10 scanlines)
+    def colour_maxVblankHandlerDuration = $D441 ; Set to max observed v-blank handler duration on a non-lag frame
+    def colour_D442 = $D442 ; Set to max observed LCD Y at start of colour hack's end of frame routine
+    def colour_D443 = $D443 ; Set to [$FF04] before executing $10:432D
+    def colour_D444 = $D444 ; Set to minimum observed $10:432D duration
+    def colour_D445 = $D445 ; Previous game mode?
+    def colour_D446 = $D446 ; Set to 1 if handled VRAM tilemap transfer. Set to 2 if handled VRAM non-tilemap transfer. Otherwise 0
+    def colour_D447 = $D447 ; Set to min([VRAM transfer size], 40h) in $10:41F1
+    def colour_D448 = $D448 ; Previous value of $D449
+    ;{
+        ; If 82h, set colour 0 of each BG palette to black. Restore title screen from flash
+        ; If 83h, transfer colour 2 of BG palettes 2/5/6. Restore Metroid Queen from hurt flash
+        ; If < 7Fh, transfer all palettes
+    ;}
+    def colour_D449 = $D449 ; 
+    ;{
+        ; If 82h, set colour 0 of each BG palette to white. Title screen flash
+        ; If 83h, set colour 2 of BG palettes 2/5/6 to BG palette 3 colour 3. Metroid Queen hurt flash
+    ;}
+    def colour_D44A = $D44A ; Flag to handle colour palette transfers in v-blank handler
+    def colour_D44B = $D44B ; Darkness level
+    ;{
+        ; 0: No change
+        ; 1: Multiply colours by 12/16
+        ; 2: Multiply colours by 8/16
+        ; 3: Multiply colours by 6/16
+        ; 4: Multiply colours by 4/16
+        ; 5: Multiply colours by 3/16
+        ; 6: Multiply colours by 2/16
+        ; 7+: Colours = 0
+    ;}
+    def colour_D44C = $D44C ; Darkness level request
+    
+    def colour_bankBackup = $D44E
+    def colour_D44F = $D44F
+    def colour_D450 = $D450
+    def colour_D451 = $D451
+    def colour_D452 = $D452
+    def colour_D453 = $D453
+    def colour_D454 = $D454
+endc
 
 
 section "WRAM Star Array", wramx[$d600]
@@ -1346,7 +1407,6 @@ doorScriptBuffer: ds doorScriptBufferSize ; $D700..$D73F: Screen transition comm
 section "WRAM SaveBuffer", wramx[$d800]
 ;$D800..25: Save data. Data loaded from $1:4E64..89 by game mode Bh, loaded from $A008..2D + save slot * 40h by game mode Ch
 ;{
-saveBuffer: ; $26 bytes
 saveBuf_samusYPixel:  ds 1 ; $D800: Samus' Y position
 saveBuf_samusYScreen: ds 1 ; $D801: Samus' Y position
 saveBuf_samusXPixel:  ds 1 ; $D802: Samus' X position
@@ -1471,7 +1531,6 @@ bombArray:: ;$DD30..5F: Bomb data. 10h byte slots
 ;    + 2: Y position
 ;    + 3: X position
 ;}
-wramUnused_DD60: ds $100 - $60 ;$DD60..FF: Unused
 
 ; List of metatiles from the map to update to VRAM
 mapUpdateBuffer:: ds $100 ; $DE00..FF

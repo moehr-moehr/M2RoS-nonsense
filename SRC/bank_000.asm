@@ -35,23 +35,17 @@ RST_28: ; Jump table routine (index = a)
     jp hl
 ;}
 
-    db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-
 SECTION "VBlankInterrupt", ROM0[$40]
 VBlankInterrupt:: jp VBlankHandler
-    db $00,$00,$00,$00,$00
 
 SECTION "LCDCInterrupt", ROM0[$48]
 LCDCInterrupt:: jp LCDCInterruptHandler_farCall
-    db $00,$00,$00,$00,$00
 
 SECTION "TimerOverflowInterrupt", ROM0[$50]
 TimerOverflowInterrupt:: jp TimerOverflowInterruptStub
-    db $00,$00,$00,$00,$00
 
 SECTION "SerialTransferCompleteInterrupt", ROM0[$58]
 SerialTransferCompleteInterrupt:: jp SerialTransferInterruptStub
-    db $00,$00,$00,$00,$00
 
 SECTION "JoypadTransitionInterrupt", ROM0[$60]
 JoypadTransitionInterrupt:: nop
@@ -190,7 +184,6 @@ endc
         ld [rMBC_BANK_REG], a
         call VBlank_updateStatusBar
     .endIf_B:
-		
 ; End vblank
     call OAM_DMA ; Sprite DMA
     
@@ -6675,6 +6668,50 @@ endc
             call beginGraphicsTransfer
         ;}
         pop hl
+        
+        ; Load item text {
+        ; Set source bank
+        ld a, BANK(itemTextPointerTable)
+        ld [bankRegMirror], a
+        ld [vramTransfer_srcBank], a
+        ld [rMBC_BANK_REG], a
+        ; Read lower nybble of token
+        ld a, [hl+]
+        push hl
+            and $0f
+            ; Index into text pointer table
+            ld e, a
+            ld d, $00
+            sla e
+            rl d
+            ld hl, itemTextPointerTable
+            add hl, de
+            ; Load pointer to HL
+            ld a, [hl+]
+            ld e, a
+            ld a, [hl]
+            ld h, a
+            ld a, e
+            ld l, a
+            ; Set source address of text
+            ld a, l
+            ldh [hVramTransfer.srcAddrLow], a
+            ld a, h
+            ldh [hVramTransfer.srcAddrHigh], a
+            ; Set destination address of text
+            ld a, LOW(vramDest_itemText)
+            ldh [hVramTransfer.destAddrLow], a
+            ld a, HIGH(vramDest_itemText)
+            ldh [hVramTransfer.destAddrHigh], a
+            ; Set length of string (16 letters)
+            ld a, $10
+            ldh [hVramTransfer.sizeLow], a
+            ld a, $00
+            ldh [hVramTransfer.sizeHigh], a
+            ; Transfer graphics
+            call beginGraphicsTransfer
+        pop hl ;}
+    jr .nextToken ;}
 
 .nextToken:
     ; Wait a frame before reading another token
@@ -10776,11 +10813,8 @@ handleEnemyLoading_farCall: ; 00:3DE2
     callFar handleEnemyLoading ;$4000
     switchBank processEnemies
 ret
-		
 
 loadEnemy_getFirstEmptySlot_longJump: ; 00:3DF6
-	callFar loadEnemy_getFirstEmptySlot
-	switchBankVar $02 ; Enemy AI bank
     callFar loadEnemy_getFirstEmptySlot
     switchBankVar $02 ; Enemy AI bank
 ret
@@ -10958,7 +10992,7 @@ unusedDeathAnimation_copy: ;{ 00:3F07
     pop af
 reti ;}
 
-bank0_freespace: ; Freespace - 00:3F60 (filled with $00)if def(COLOURHACK)
+if def(COLOURHACK)
     colour_hijack_init:
     ;{
         rst $10

@@ -100,6 +100,9 @@ VBlank_updateStatusBar: ;{ 01:493E
     ld [hl+], a
     
     ; Skip over missile icon (drawn previously)
+    inc hl
+    inc hl
+    inc hl
     
     ; Draw Samus' missiles (hundreds digit)
     ld a, [samusDispMissilesHigh]
@@ -119,6 +122,7 @@ VBlank_updateStatusBar: ;{ 01:493E
     ld [hl+], a
     
     ; Skip over metroid icon
+    inc hl
     inc hl
     inc hl
     inc hl
@@ -166,6 +170,25 @@ VBlank_updateStatusBar: ;{ 01:493E
             ld [hl], a
             ret
     .else_C:
+        ld a, [metroidLCounterDisp]
+        cp $ff
+        jr z, .else_E
+            ; Draw normal L counter (tens digit)
+            and $f0
+            swap a
+            add $a0
+            ld [hl+], a
+            ; Ones digit
+            ld a, [metroidLCounterDisp]
+            and $0f
+            add $a0
+            ld [hl], a
+            ret
+        .else_E:
+            ; Draw blank L counter "--"
+            ld a, $9e ; Dash
+            ld [hl+], a
+            ld [hl], a
             ret
 ;}
 ;} end proc
@@ -938,6 +961,7 @@ createNewSave: ;{ 01:4E1C
     ; Copy initial save file to save buffer
     ld hl, initialSaveFile
     ld de, saveBuffer
+    ld b, $26
     .loadLoop:
         ld a, [hl+]
         ld [de], a
@@ -973,6 +997,7 @@ loadSaveFile: ;{ 01:4E33
     
     ; Copy save file to save buffer
     ld de, saveBuffer
+    ld b, $26
     .loadLoop:
         ld a, [hl+]
         ld [de], a
@@ -2959,6 +2984,8 @@ miscIngameTasks: ;{ 01:57F2
     ; Skip this if in the Queen fight
     ld a, [queen_roomFlag]
     cp $11
+    jr z, .endIf_B
+        ; Check if window is active
         ldh a, [rLCDC]
         bit 5, a
         jr nz, .endIf_C
@@ -2967,6 +2994,8 @@ miscIngameTasks: ;{ 01:57F2
             ldh [rLCDC], a
         .endIf_C:
         
+        ld a, $88 ; Default window position
+        ldh [rWY], a
         ; Check different cases for raising the window
         ld a, [saveContactFlag] ; Only unset by door transitions and this function
         and a
@@ -2974,11 +3003,16 @@ miscIngameTasks: ;{ 01:57F2
             ; Check if item being collected
             ld a, [itemCollected_copy]
             and a
+            jr z, .endIf_B
                 ld a, [itemCollected_copy]
                 cp $0b ; Check if not a common item or refill
+                jr nc, .endIf_B
+                    ld a, $80 ; Higher window position
                     ldh [rWY], a
+                    jr .endIf_B
         .else_D:
             ; Touching a save point
+            ld a, $80 ; Higher window position
             ldh [rWY], a
             ; Don't allow saving while "Completed" is displayed
             ld a, [saveMessageCooldownTimer]
@@ -4366,6 +4400,8 @@ saveFileToSRAM: ;{ 01:7ADF
     
     ; Save displayed metroid count
     ld a, [metroidCountDisplayed]
+    ld [hl], a
+    
     ; Disable SRAM
     ld a, $00
     ld [$0000], a

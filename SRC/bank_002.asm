@@ -1,3 +1,8 @@
+; Disassembly of "Metroid2.gb"
+; This file was created with:
+; mgbdis v1.4 - Game Boy ROM disassembler by Matt Currie and contributors.
+; https://github.com/mattcurrie/mgbdis
+
 SECTION "ROM Bank $002", ROMX[$4000], BANK[$2]
 
 enemyHandler: ;{ 02:4000
@@ -2471,6 +2476,12 @@ ret
     ; Let game know that an item is being collected now
     ld a, $ff
     ld [itemCollectionFlag], a
+        ; m2maps: store enemy WRAM to do update to clear item dot
+            ld a, [hEnemyWramAddrLow]
+            ld [clearItemDotLow], a
+            ld a, [hEnemyWramAddrHigh]
+            ld [clearItemDotHigh], a
+        ; end m2maps block
 ret
 
 .checkIfDone:
